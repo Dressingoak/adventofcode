@@ -46,7 +46,6 @@ def swap_program_instructions(ins):
     while (j < len(ins)):
         m = re.match(r'^(jmp|nop) ([\+|\-]\d+)$', ins[j])
         if m:
-            # print("[DEBUG] Trying line {} of {}.".format(i, len(possible_bags)))
             cpy = ins.copy()
             cpy[j] = "{} {}".format("jmp" if m.group(1) == "nop" else "nop", m.group(2))
             (success, acc) = run_program(cpy)
