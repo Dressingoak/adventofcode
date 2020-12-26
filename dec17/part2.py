@@ -1,29 +1,34 @@
 class Cube:
 
-    def __init__(self, x, y, z):
+    def __init__(self, x, y, z, w):
         self.x = x
         self.y = y
         self.z = z
+        self.w = w
 
     def __eq__(self, other):
         if isinstance(other, Cube):
-            return self.x == other.x and self.y == other.y and self.z == other.z
+            return self.x == other.x and self.y == other.y and self.z == other.z and self.w == other.w
         return False
 
     def __lt__(self, other):
-        return (self.z, self.y, self.x) < (other.z, other.y, other.x)
+        return (self.w, self.z, self.y, self.x) < (other.w, other.z, other.y, other.x)
 
     def __hash__(self):
-        return hash((self.x, self.y, self.z))
+        return hash((self.x, self.y, self.z, self.w))
 
     def __repr__(self):
-        return "Cube<{:2d},{:2d},{:2d}>".format(self.x, self.y, self.z)
+        return "Cube<{:2d},{:2d},{:2d}>".format(self.x, self.y, self.z, self.w)
     
     def get_surrounding(self, include_self=True):
         cubes = []
-        I = range(27) if include_self else [_ for _ in range(27) if _ != 13]
+        I = range(81) if include_self else [_ for _ in range(81) if _ != 40]
         for i in I:
-            cubes.append(Cube(self.x + i % 3 - 1, self.y + (i // 3) % 3 - 1, self.z + i // 9 - 1))
+            dx = (i // 3**0) % 3 - 1
+            dy = (i // 3**1) % 3 - 1
+            dz = (i // 3**2) % 3 - 1
+            dw = (i // 3**3) % 3 - 1
+            cubes.append(Cube(self.x + dx, self.y + dy, self.z + dz, self.w + dw))
         return cubes
         
 class CubeField:
@@ -33,7 +38,7 @@ class CubeField:
         for i in range(len(data)):
             for j in range(len(data[i])):
                 if data[i][j] == "#":
-                    self.active.add(Cube(j, i, 0))
+                    self.active.add(Cube(j, i, 0, 0))
         self.ranges = self.calculate_ranges()
 
     def advance(self):
@@ -47,7 +52,6 @@ class CubeField:
             adjs = cube.get_surrounding(False)
             for adj in adjs:
                 if adj in self.active:
-                    # print("[DEBUG] Adjecent cube to {} is {}".format(cube, adj))
                     count += 1
             if cube in self.active:
                 if count == 2 or count == 3:
@@ -58,11 +62,11 @@ class CubeField:
         self.active = states
         self.ranges = self.calculate_ranges()
 
-    def layer_to_string(self, layer):
+    def layer_to_string(self, zlayer, wlayer):
         _str = ""
         for y in range(self.ranges[1][0], self.ranges[1][1] + 1):
             for x in range(self.ranges[0][0], self.ranges[0][1] + 1):
-                if Cube(x, y, layer) in self.active:
+                if Cube(x, y, zlayer, wlayer) in self.active:
                     _str += "#"
                 else:
                     _str += "."
@@ -71,17 +75,19 @@ class CubeField:
     
     def __str__(self):
         _str = ""
-        for k in range(self.ranges[2][0], self.ranges[2][1] + 1):
-            _str += "z = {}\n".format(k)
-            _str += self.layer_to_string(k)
-            _str += "\n\n"
+        for l in range(self.ranges[3][0], self.ranges[3][1] + 1):
+            for k in range(self.ranges[2][0], self.ranges[2][1] + 1):
+                _str += "z = {}, w = {}\n".format(k, l)
+                _str += self.layer_to_string(k, l)
+                _str += "\n\n"
         return _str.strip()
 
     def calculate_ranges(self):
         ranges = (
             (min([_.x for _ in self.active]), max([_.x for _ in self.active])),
             (min([_.y for _ in self.active]), max([_.y for _ in self.active])),
-            (min([_.z for _ in self.active]), max([_.z for _ in self.active]))
+            (min([_.z for _ in self.active]), max([_.z for _ in self.active])),
+            (min([_.w for _ in self.active]), max([_.w for _ in self.active]))
         )
         return ranges
 
