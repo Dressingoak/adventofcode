@@ -2,54 +2,53 @@ import re
 import itertools
 
 (data_rules, data_messages) = open("input.txt").read().strip().split("\n\n")
-data_rules = data_rules.split("\n")
-data_messages = data_messages.split("\n")
+messages = data_messages.split("\n")
 
 rules = dict()
+pattern = re.compile(r'^(?P<rule>\d+)\:\s(\"(?P<char>\w)\"|(?P<r1>\d+(\s\d+)*)(\s\|\s(?P<r2>\d+(\s\d+)*))?)$')
 
-i = 0
-while len(rules) < len(data_rules):
-    # print("[DEBUG] Parsed rules {}/{}".format(len(rules), len(data_rules)))
-    i = i % len(data_rules)
-    m = re.match(r'^(\d+)\:\s(.+)$', data_rules[i])
+for rule in data_rules.split("\n"):
+    m = pattern.match(rule)
     if m:
-        rule = int(m.group(1))
-        if rule in rules:
-            i += 1
+        objs = m.groupdict()
+        idx = int(objs["rule"])
+        if objs["char"] is not None:
+            rules[idx] = objs["char"]
         else:
-            mw = re.match(r'^\"(\w+)\"$', m.group(2))
-            if mw:
-                # print("[DEBUG] Adding rule {}: '{}'".format(rule, mw.group(1)))
-                rules[rule] = set([mw.group(1)])
+            r1 = [int(_) for _ in objs["r1"].split(" ")]
+            if objs["r2"] is not None:
+                r2 = [int(_) for _ in objs["r2"].split(" ")]
+                rules[idx] = [r1, r2]
             else:
-                mc = re.match(r'^(?P<first>[\d\s]+)(\s\|\s(?P<second>[\d\s]+))?$', m.group(2))
-                if mc:
-                    entries = mc.groupdict()
-                    first = [int(_) for _ in entries["first"].split(" ")]
-                    second = [] if entries["second"] is None else [int(_) for _ in entries["second"].split(" ")]
-                    present = len(set(first).union(set(second)).difference(set(_ for _ in rules.keys()))) == 0
-                    if present:
-                        cmb_first = set(["".join(list(_)) for _ in itertools.product(*[rules[r] for r in first])])
-                        # print("[DEBUG] For rule {} (first), values can be: {}".format(rule, sorted(list(cmb_first))))
-                        if len(second) > 0:
-                            cmb_second = set(["".join(list(_)) for _ in itertools.product(*[rules[r] for r in second])])
-                            # print("[DEBUG] For rule {} (second), values can be: {}".format(rule, sorted(list(cmb_second))))
-                            rules[rule] = cmb_first.union(cmb_second)
-                        else:
-                            rules[rule] = cmb_first
-            i += 1
+                rules[idx] = [r1]
     else:
-        raise Exception("Match error: {}".format(data_rules[i]))
+        raise Exception("Could not match rule: '{}'".format(rule))
 
-rule0 = rules[0]
-del rules
-c = 0
-for message in data_messages:
-    if message in rule0:
-        m = "MATCHED"
-        c += 1
+def recognise_language(msg, state=0, s="", outer=True):
+    if isinstance(rules[state], str):
+        if s + rules[state] in msg:
+            return [s + rules[state]]
+        else:
+            return []
     else:
-        m = "NOT MATCHED"
-    # print("[DEBUG] Message '{}': {}".format(message, m))
+        paths = rules[state]
+        p = set()
+        for path in paths:
+            _p = set([s])
+            for _state in path:
+                _p_new = set()
+                for _s in _p:
+                    _p_new.update(set(recognise_language(msg, _state, _s, False)))
+                _p = _p_new
+            p.update(_p)
+        if outer:
+            return len([_ for _ in p if _ == msg]) == 1
+        else:
+            return list(p)
 
-print("Part 1: {}".format(c))
+print("Part 1: {}".format(sum(1 if recognise_language(message) else 0 for message in messages)))
+
+rules[8] = [[42], [42, 8]]
+rules[11] = [[42, 31], [42, 11, 31]]
+
+print("Part 2: {}".format(sum(1 if recognise_language(message) else 0 for message in messages)))
