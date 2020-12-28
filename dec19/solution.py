@@ -1,5 +1,4 @@
 import re
-import itertools
 
 (data_rules, data_messages) = open("input.txt").read().strip().split("\n\n")
 messages = data_messages.split("\n")
