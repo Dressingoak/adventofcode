@@ -42,7 +42,31 @@ class Tile:
             int("".join(["1" if self.data[-1][j] else "0" for j in range(self.width)]), 2), # Bottom
             int("".join(["1" if self.data[i][0] else "0" for i in range(self.height)]), 2) # Left
         ]
-
+    
+    def highlight_pattern(self, pattern):
+        arr = pattern.strip("\n").split("\n")
+        chars = []
+        for i, line in enumerate(arr):
+            for j, char in enumerate(line):
+                if char == "#":
+                    chars.append((i, j))
+        h = max(i for (i, _) in chars)
+        w = max(j for (_, j) in chars)
+        paint = []
+        for i in range(self.height - h):
+            for j in range(self.width - w):
+                matched = 0
+                for (di, dj) in chars:
+                    if self.data[i + di][j + dj]:
+                        matched += 1
+                if matched == len(chars):
+                    paint.append((i, j))
+        depicted = [[char for char in line] for line in self.__str__().split("\n")]
+        for (i, j) in paint:
+            for (di, dj) in chars:
+                depicted[i + di][j + dj] = "O"
+        picture = "\n".join(["".join(line) for line in depicted])
+        return (paint, picture)
 class TileBorders():
 
     def __init__(self, tile):
@@ -67,11 +91,6 @@ class TileBorders():
             if yin[3] == yang[1]:
                 ways.append(("l", perm))
         return ways
-
-tile_data = open("input.txt").read().strip().split("\n\n")
-
-tiles = [Tile(t) for t in tile_data]
-borders = [TileBorders(t) for t in tiles]
 
 def is_square(num):
     for i in range(1, num):
@@ -103,7 +122,6 @@ def solve_jigsaw(remaining, current=None, size=None):
         adj_c = set([(x,y-1), (x,y+1)]) if look_c else set()
         adjecents = [pos for pos in adj_r.union(adj_c) if pos not in current]
         # print("[DEBUG] Looking at tile {}, adjecent positions are: {}".format(tile.id, ", ".join([str(_) for _ in adjecents])))
-        # fits = []
         for n, other in enumerate(remaining):
             arrangements = tile.fit(orientation, other)
             for (rel, perm) in arrangements:
@@ -129,9 +147,13 @@ def solve_jigsaw(remaining, current=None, size=None):
                 solution = solve_jigsaw([v for (k, v) in enumerate(remaining) if k != n], {**current, **{pos: (perm, other)}}, size)
                 if solution is not None:
                     return solution
-                # fits.append((pos, perm, other))
         # print("[DEBUG] Possible arrangements:\n[DEBUG] - {}".format("\n[DEBUG] - ".join(["{} (o: {}) at {}".format(t.id, perm, pos) for (pos, perm, t) in fits])))
     return None
+
+tile_data = open("input.txt").read().strip().split("\n\n")
+
+tiles = [Tile(t) for t in tile_data]
+borders = [TileBorders(t) for t in tiles]
 
 solution = solve_jigsaw(borders)
 
@@ -143,3 +165,45 @@ print(s.strip())
 
 value = int(solution[0][0][1].id) * int(solution[0][-1][1].id) * int(solution[-1][-1][1].id) * int(solution[-1][0][1].id)
 print("Part 1: {}".format(value))
+
+chopped_tiles = dict()
+for i, row in enumerate(solution):
+    for j, (orientation, tb) in enumerate(row):
+        tile = next(filter(lambda x: x.id == tb.id, tiles))
+        if orientation[0] == 1:
+            tile.flip()
+        for _ in range(orientation[1]):
+            tile.rotate()
+        picture = str(tile)
+        chopped = [line[1:-1] for line in picture.split("\n")[1:-1]]
+        chopped_tiles[(i, j)] = chopped
+
+size = 8 * is_square(len(borders))
+
+full_image = ""
+for i in range(size):
+    ip = i // 8
+    iq = i % 8
+    for j in range(size):
+        jp = j // 8
+        jq = j % 8
+        full_image += chopped_tiles[(ip, jp)][iq][jq]
+    full_image += "\n"
+
+full_image = Tile("Tile 0000:\n" + full_image.strip())
+
+pattern = """
+                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #   
+""".strip("\n")
+
+for f in range(0, 2):
+    for r in range(0, 4):
+        (monsters, picture) = full_image.highlight_pattern(pattern)
+        if len(monsters) > 0:
+            print(picture)
+            roughness = sum(sum(char=="#" for char in line) for line in picture.split("\n"))
+            print("Part 2: {}".format(roughness))
+        full_image.rotate()
+    full_image.flip()
