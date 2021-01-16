@@ -1,7 +1,7 @@
 from collections import deque
 from progress.bar import Bar
 import logging
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
 
 class CrabCups:
 
@@ -37,8 +37,8 @@ class CrabCups:
 
     def move(self):
         self.moves += 1
-        # self.logger.info("-- move {} --".format(self.moves))
-        # self.logger.debug("cups: {}".format(self))
+        self.logger.info("-- move {} --".format(self.moves))
+        self.logger.debug("cups: {}".format(self))
         self.rotate_to(self.current, 1)
         picked = deque([self.labeling.popleft() for _ in range(3)])
         destination = None
@@ -48,15 +48,15 @@ class CrabCups:
             tmp = (tmp - self.lowest) % self.count + self.lowest
             if tmp in self.labeling:
                 destination = tmp
-        # self.logger.debug("pick up: {}".format(", ".join([str(_) for _ in picked])))
-        # self.logger.debug("destination: {}".format(destination))
+        self.logger.debug("pick up: {}".format(", ".join([str(_) for _ in picked])))
+        self.logger.debug("destination: {}".format(destination))
         self.rotate_to(destination, 1)
         picked.extend(self.labeling)
         idx = (picked.index(self.current) + 1) % self.count
         self.current = picked[idx]
         self.labeling = picked
-        # self.logger.debug("")
-        # self.rotate_to(self.current, -self.moves)
+        self.logger.debug("")
+        self.rotate_to(self.current, -self.moves)
 
 # game = CrabCups("389125467")
 init = "871369452"
@@ -66,31 +66,33 @@ game_one = CrabCups(init)
 logging.info("Part 1: {}".format(game_one.get_label()))
 
 CrabCups.logger.propagate = True
-game_two = CrabCups(init, 1_000_000)
-step = 100
-steps = 10_000_000
-class ShufflingBar(Bar):
-    message = "Shuffling"
-    suffix = "%(percent).1f%% (ETA: %(remaining_fmt)s, elapsed: %(elapsed_fmt)s)"
-    @property
-    def remaining_fmt(self):
-        days = self.eta // (60 * 60 * 24)
-        hours = (self.eta // (60 * 60)) % 24
-        minutes = (self.eta // 60) % 60
-        seconds = self.eta % 60
-        return "{}d {}h {}m {}s".format(days, hours, minutes, seconds)
-    @property
-    def elapsed_fmt(self):
-        days = self.elapsed // (60 * 60 * 24)
-        hours = (self.elapsed // (60 * 60)) % 24
-        minutes = (self.elapsed // 60) % 60
-        seconds = self.elapsed % 60
-        return "{}d {}h {}m {}s".format(days, hours, minutes, seconds)
-with ShufflingBar("Shuffling", max=steps//step) as bar:
-    for i in range(steps):
-        game_two.move()
-        if i % step == 0:
-            bar.next()
-    bar.finish()
+game_two = CrabCups(init, 30)
+
+[game_two.move() for _ in range(10)]
+# step = 100
+# steps = 10_000_000
+# class ShufflingBar(Bar):
+#     message = "Shuffling"
+#     suffix = "%(percent).1f%% (ETA: %(remaining_fmt)s, elapsed: %(elapsed_fmt)s)"
+#     @property
+#     def remaining_fmt(self):
+#         days = self.eta // (60 * 60 * 24)
+#         hours = (self.eta // (60 * 60)) % 24
+#         minutes = (self.eta // 60) % 60
+#         seconds = self.eta % 60
+#         return "{}d {}h {}m {}s".format(days, hours, minutes, seconds)
+#     @property
+#     def elapsed_fmt(self):
+#         days = self.elapsed // (60 * 60 * 24)
+#         hours = (self.elapsed // (60 * 60)) % 24
+#         minutes = (self.elapsed // 60) % 60
+#         seconds = self.elapsed % 60
+#         return "{}d {}h {}m {}s".format(days, hours, minutes, seconds)
+# with ShufflingBar("Shuffling", max=steps//step) as bar:
+#     for i in range(steps):
+#         game_two.move()
+#         if i % step == 0:
+#             bar.next()
+#     bar.finish()
 (pos1, pos2) = game_two.get_star_positions()
 logging.info("Part 2: {} (= {} * {})".format(pos1*pos2, pos1, pos2))
