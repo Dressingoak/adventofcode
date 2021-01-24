@@ -11,7 +11,7 @@ int main() {
 	spdlog::set_level(spdlog::level::info);
 	spdlog::info("Initializing...");
 	spdlog::stopwatch sw;
-	auto cc = CrabCups<unsigned, 9, 1000000>("389125467");
+	auto cc = CrabCups<unsigned, 9, 1000000>("871369452");
 	spdlog::info("Initialized in {:.3}", sw);
 	spdlog::info("Starting...");
 	spdlog::stopwatch sw2;
@@ -25,7 +25,7 @@ int main() {
 		for (unsigned j = 0; j < log_every; j++)
 			cc.move();
 		eta.update(sw2.elapsed(), i);
-		spdlog::info("Progress: {:>6.2f}% (ETA: {})", eta.get_percentage(), eta);
+		spdlog::info("Progress: {:>5.1f}% (ETA: {})", eta.get_percentage(), eta);
 	}
 	spdlog::info("Completed in {:.3}", sw2);
 	auto of1 = cc.find(1, 1);
