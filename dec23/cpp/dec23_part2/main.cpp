@@ -1,7 +1,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
 
-#include "CrabCups.h"
+#include "CrabCupsFast.h"
 
 int main() {
 
