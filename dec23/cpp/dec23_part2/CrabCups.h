@@ -1,143 +1,173 @@
 #pragma once
-#include <vector>
-#include <iterator>
-#include <numeric>
-#include <string_view>
+#include <map>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 
-template<class T, std::size_t N, std::size_t M = N>
+template<std::size_t N, std::size_t M = N>
 class CrabCups {
-	using Vect = typename std::vector<T>;
-	using Iter = typename Vect::iterator;
-
-	template<class T_, std::size_t N_, std::size_t M_>
-	friend std::ostream& operator<<(std::ostream& os, const CrabCups<T_, N_, M_>& cc);
+	using T = typename unsigned;
+	using Map = typename std::map<T, T>;
 
 private:
 	unsigned int _moves = 0;
 	const std::size_t _swapped = 3;
-	Vect _data;
-	Iter _it;
+	bool _formatted = true;
+	T _current;
+	Map _data;
 
 private:
 	static T char2uint(const char c) { return c - '0'; }
 
 public:
 	CrabCups(const char(&data)[N + 1])
+		: _current(char2uint(data[0]))
 	{
-		_data.reserve(M);
-		for (std::size_t i = 0; i < N; i++)
-			_data.push_back(char2uint(data[i]));
-		for (std::size_t j = N; j < M; j++)
-			_data.push_back(j + 1);
-		_it = _data.begin();
+		auto get_value = [&data](std::size_t i) {
+			T idx = i % M;
+			if (idx < N)
+				return char2uint(data[idx]);
+			else
+				return idx + 1;
+		};
+		for (std::size_t i = 0; i < M; i++)
+		{
+			T value = get_value(i);
+			T next = get_value(i + 1);
+			_data[value] = next;
+		}
 	}
 
-	constexpr std::size_t size() const {
+	constexpr T size() const {
 		return M;
 	}
 
-	inline unsigned int get_moves() const {
+	unsigned int get_moves() const {
 		return _moves;
 	}
 
-private:
-	inline Iter advance(Iter it, typename Iter::difference_type diff) {
-		auto rem = diff % size();
-		auto until = std::distance(it, _data.end());
-		auto dist = rem < until ? std::distance(_data.begin(), it + rem) : rem - until;
-		return _data.begin() + dist;
-	}
-
-	inline Iter advance(typename Iter::difference_type diff) {
-		return advance(_it, diff);
-	}
-
 public:
-	inline T get_current() const { return *_it; }
+	void set_formatted(bool value) { _formatted = value; }
+	bool is_formatted() const { return _formatted; }
 
-	inline Iter get_destination() {
-		T target = get_current();
-		bool end = false;
-		while (!end)
+	T get_current() const { return _current; }
+
+	T follow(const T value, const T n) const
+	{
+		T cur = value;
+		for (T i = 0; i < n; i++)
+			cur = _data.at(cur);
+		return cur;
+	}
+
+	static constexpr T subtract(T value)
+	{
+		return value == 1 ? M : value - 1;
+	}
+
+	T get_destination() const {
+		T target = subtract(_current);
+		for (unsigned i = 0; i < _swapped; i++)
 		{
-			target = subtract(target);
-			end = true;
-			for (typename Iter::difference_type i = 1; i <= _swapped; i++)
+			bool appeared = false;
+			T tail = _data.at(_current);
+			for (unsigned j = 0; j < _swapped; j++)
 			{
-				if (target == *advance(i))
+				if (tail == target)
 				{
-					end = false;
+					// spdlog::trace("Cannot be that!");
+					appeared = true;
 					break;
 				}
+				tail = _data.at(tail);
 			}
+			if (!appeared)
+				break;
+			else
+				target = subtract(target);
 		}
-		return std::find(_data.begin(), _data.end(), target);
+		return target;
 	}
 
 private:
-	inline T subtract(T value) const 
-	{
-		auto v = value - 1;
-		return v == 0 ? size() : v;
-	}
 
-	inline typename Iter::difference_type distance(Iter first, Iter last) const
+	void swap_cups()
 	{
-		auto dist = std::distance(first, last);
-		if (dist > 0)
-			return dist;
-		else
-			return M + dist;
-	}
+		T destination = get_destination();
+		// spdlog::trace("destination is {}", destination);
 
-	inline Iter swap_cups() {
-		Iter dest = get_destination();
-		auto dist = distance(_it, dest) - _swapped;
-		for (unsigned i = _swapped; i > 0; i--)
-		{
-			auto left = advance(_it, i);
-			for (unsigned j = dist; j > 0; j--)
-			{
-				auto right = advance(_it, i + j);
-				std::swap(*left, *right);
-			}
-		}
-		_it = advance(_it, 1);
-		return _it;
+		T segment_end = follow(_current, _swapped);
+		// spdlog::trace("segment_end is {}", segment_end);
+
+		T after_current = _data.at(segment_end);
+		// spdlog::trace("after_current is {}", after_current);
+
+		T after_destination = _data.at(_current);
+		// spdlog::trace("after_destination is {}", after_destination);
+
+		T after_segment = _data.at(destination);
+		// spdlog::trace("after_segment is {}", after_segment);
+		
+
+		_data[_current] = after_current;
+		_data[destination] = after_destination;
+		_data[segment_end] = after_segment;
+
+		_current = _data.at(_current);
 	}
 
 public:
-	inline void move() {
+	void move() {
 		_moves++;
-		// spdlog::debug("-- move {}--", _moves);
-		// spdlog::debug("cups: {}", *this);
-		// spdlog::debug("pick up: {}, {}, {}", *advance(1), *advance(2), *advance(3));
-		// spdlog::debug("destination: {}", *get_destination());
 		swap_cups();
 	}
 
-	inline T find(T value, typename Iter::difference_type offset)
+	void move_detailed()
 	{
-		Iter it = std::find(_data.begin(), _data.end(), value);
-		auto loc = advance(it, offset);
-		return *loc;
+		spdlog::debug("-- move {}--", _moves + 1);
+		spdlog::debug("cups: {}", *this);
+		spdlog::debug("pick up: {}, {}, {}", follow(_current, 1), follow(_current, 2), follow(_current, 3));
+		spdlog::debug("destination: {}", get_destination());
+		move();
+	}
+
+	std::ostream& print_simple(std::ostream& os, const T start = 1, unsigned cut = 0) const
+	{
+		auto value = start;
+		for (std::size_t i = 0; i < M - cut; i++)
+		{
+			value = _data.at(value);
+			os << value;
+		}
+		return os;
+	}
+
+	std::ostream& print_formatted(std::ostream& os) const
+	{
+		auto dist = M - _moves % M;
+		const std::size_t init = follow(get_current(), dist);
+		std::size_t value = init;
+		do {
+			if (value == get_current())
+				os << "(" << value << ")";
+			else
+				os << " " << value << " ";
+			auto next = _data.at(value);
+			value = next;
+		} while (value != init);
+		return os;
 	}
 
 };
 
-template<class T, std::size_t N, std::size_t M>
-inline std::ostream& operator<<(std::ostream& os, const CrabCups<T, N, M>& cc)
+template<std::size_t N, std::size_t M>
+inline std::ostream& operator<<(std::ostream& os, const CrabCups<N, M>& cc)
 {
-	for (auto const& i : cc._data)
-		if (i == cc.get_current())
-			os << "(" << i << ")";
-		else
-			os << " " << i << " ";
-	return os;
+	if (cc.is_formatted())
+		return cc.print_formatted(os);
+	else
+		return cc.print_simple(os, 1, 1);
 }
 
 template<std::size_t N>
-CrabCups(const char(&data)[N])->CrabCups<unsigned int, N - 1>;
+CrabCups(const char(&data)[N])->CrabCups<N - 1>;
