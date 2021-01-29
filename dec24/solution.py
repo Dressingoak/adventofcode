@@ -2,11 +2,12 @@ import re
 
 class HexagonTile:
 
-    def __init__(self, ins, x=0, y=0, z=0):
+    def __init__(self, ins="", x=0, y=0, z=0):
         self.x = x
         self.y = y
         self.z = z
-        self.move_many(ins)
+        if len(ins) > 0:
+            self.move_many(ins)
 
     def __repr__(self):
         return "HexagonTile<{}, {}, {}>".format(self.x, self.y, self.z)
@@ -43,13 +44,44 @@ class HexagonTile:
         else:
             raise Exception("Unknown hexagon grid direction: {}".format(d))
 
-floor = dict()
+    def copy(self):
+        return HexagonTile("", self.x, self.y, self.z)
+
+    def get_adjacent(self):
+        lst = []
+        for d in ["e", "se", "sw", "w", "nw", "ne"]:
+            tile = self.copy()
+            tile.move(d)
+            lst.append(tile)
+        return set(lst)
+
+floor = set()
 
 for line in open("input.txt").read().strip().split("\n"):
     tile = HexagonTile(line)
     if tile in floor:
-        del floor[tile]
+        floor.remove(tile)
     else:
-        floor[tile] = 1
+        floor.add(tile)
 
 print("Part 1: {}".format(len(floor)))
+
+for i in range(100):
+    black = {_ for _ in floor}
+    white_neighbours = set().union(*[tile.get_adjacent() for tile in floor]).difference(black)
+
+    new_floor = set()
+    for tile in black:
+        n = len(tile.get_adjacent().intersection(black))
+        if n == 0 or n > 2:
+            continue
+        new_floor.add(tile)
+    for tile in white_neighbours:
+        n = len(tile.get_adjacent().intersection(black))
+        if n == 2:
+            new_floor.add(tile)
+    
+    floor = new_floor
+    # print("Day {}: {}".format(i+1, len(floor)))
+
+print("Part 2: {}".format(len(floor)))
