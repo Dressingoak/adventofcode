@@ -9,6 +9,7 @@ dist/
 out/
 .vs/
 .python_venv/
+Cargo.lock
 
 # Compiled Java class files
 *.class
