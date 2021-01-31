@@ -3,7 +3,7 @@ struct Intcode {
 }
 
 impl Intcode {
-    fn create(instructions: String) -> Intcode {
+    fn create(instructions: &String) -> Intcode {
         let values: Vec<u32> = instructions.split(",").map(|x| x.parse::<u32>().unwrap()).collect();
         Intcode { values }
     }
@@ -38,41 +38,41 @@ mod tests {
 
     #[test]
     fn test_construction() {
-        let code = Intcode::create(String::from("1,0,0,0,99"));
+        let code = Intcode::create(&String::from("1,0,0,0,99"));
         assert_eq!(code.values, vec![1,0,0,0,99]); 
     }
 
     #[test]
     fn test_updating() {
-        let mut code = Intcode::create(String::from("1,0,0,0,99"));
+        let mut code = Intcode::create(&String::from("1,0,0,0,99"));
         code.update(1, 12);
         assert_eq!(code.values[1], 12); 
     }
 
     #[test]
     fn test_run_ex1() {
-        let mut code = Intcode::create(String::from("1,0,0,0,99"));
+        let mut code = Intcode::create(&String::from("1,0,0,0,99"));
         code.run();
         assert_eq!(code.values, vec![2,0,0,0,99]); 
     }
 
     #[test]
     fn test_run_ex2() {
-        let mut code = Intcode::create(String::from("2,3,0,3,99"));
+        let mut code = Intcode::create(&String::from("2,3,0,3,99"));
         code.run();
         assert_eq!(code.values, vec![2,3,0,6,99]); 
     }
 
     #[test]
     fn test_run_ex3() {
-        let mut code = Intcode::create(String::from("2,4,4,5,99,0"));
+        let mut code = Intcode::create(&String::from("2,4,4,5,99,0"));
         code.run();
         assert_eq!(code.values, vec![2,4,4,5,99,9801]); 
     }
 
     #[test]
     fn test_run_ex4() {
-        let mut code = Intcode::create(String::from("1,1,1,4,99,5,6,0,99"));
+        let mut code = Intcode::create(&String::from("1,1,1,4,99,5,6,0,99"));
         code.run();
         assert_eq!(code.values, vec![30,1,1,4,2,5,6,0,99]); 
     }
@@ -87,9 +87,27 @@ fn main() {
         .chars()
         .filter(|c| !c.is_whitespace())
         .collect();
-    let mut code = Intcode::create(instructions);
-    code.update(1, 12);
-    code.update(2, 2);
-    let res = code.run();
-    println!("Part 1: {}", res);
+    
+    {
+        let mut code = Intcode::create(&instructions);
+        code.update(1, 12);
+        code.update(2, 2);
+        let res = code.run();
+        println!("Part 1: {}", res);
+    }
+    
+
+    for i in 0..100 {
+        for j in 0..100 {
+            let mut code = Intcode::create(&instructions);
+            code.update(1, i);
+            code.update(2, j);
+            let res = code.run();
+            if res == 19690720 {
+                let noun = code.values[1];
+                let verb = code.values[2];
+                println!("Part 2: {} (= 100 * {} + {})", 100*noun + verb, noun, verb);
+            }
+        };
+    };
 }
