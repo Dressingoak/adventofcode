@@ -179,6 +179,26 @@ impl LineSegment {
             .filter(|p| *p != Point::origin())
             .collect()
     }
+
+    fn intersections_with_steps(left: &Vec<LineSegment>, right: &Vec<LineSegment>) -> HashSet<(u32, Point)> {
+        use itertools::Itertools;
+
+        left.iter()
+            .enumerate()
+            .cartesian_product(right.iter().enumerate())
+            .filter_map(|((i, l), (j, r))| {
+                match l.cross(r) {
+                    Some(p) if p != Point::origin() => Some((((i, l.start.dist(&p)), (j, r.start.dist(&p))), p)),
+                    _ => None,
+                }                
+            })
+            .map(|(((i, dist_left), (j, dist_right)), p)| {
+                let left_len = left[..i].iter().fold(dist_left, |acc, segment| acc + segment.length);
+                let right_len = right[..j].iter().fold(dist_right, |acc, segment| acc + segment.length);
+                (left_len + right_len, p)
+            })
+            .collect()
+    }
 }
 
 impl fmt::Display for LineSegment {
@@ -187,20 +207,35 @@ impl fmt::Display for LineSegment {
     }
 }
 
-fn minimal_distance_to_intersections(filename: &str) -> Option<u32> {
+fn get_wires_from_file(filename: &str) -> (Vec<LineSegment>, Vec<LineSegment>) {
     use std::fs;
 
-    let wires: Vec<Vec<LineSegment>> = fs::read_to_string(filename)
+    let mut wires: Vec<Vec<LineSegment>> = fs::read_to_string(filename)
         .expect("Something went wrong reading the file.")
         .lines()
         .map(|ins| LineSegment::get_segments(&ins.to_string()))
         .collect();
-    if wires.len() != 2 { 
-        panic!("Expected 2 wires in file '{}', but got {}", filename, wires.len()) 
+    let dual = (wires.pop(), wires.pop());
+    match dual {
+        (Some(a), Some(b)) => (a, b),
+        _ => panic!("Found less than two rows in {}", filename),
     }
-    LineSegment::intersections(&wires[0], &wires[1]).iter()
+}
+
+fn minimal_distance_to_intersection(filename: &str) -> Option<u32> {
+    let (wire_a, wire_b) = get_wires_from_file(filename);
+
+    LineSegment::intersections(&wire_a, &wire_b).iter()
         .map(|p| p.dist(&Point::origin()))
         .min()
+}
+
+fn minimal_steps_to_intersection(filename: &str) -> Option<u32> {
+    let (wire_a, wire_b) = get_wires_from_file(filename);
+
+    LineSegment::intersections_with_steps(&wire_a, &wire_b).iter()
+        .map(|x| x.0)
+        .min_by(|x, y| x.cmp(&y))
 }
 
 #[cfg(test)]
@@ -269,22 +304,53 @@ mod tests {
     }
 
     #[test]
+    fn test_multiple_crosses_with_steps() {
+        use std::collections::HashSet;
+
+        let segments_a = LineSegment::get_segments(&String::from("R8,U5,L5,D3"));
+        let segments_b = LineSegment::get_segments(&String::from("U7,R6,D4,L4"));
+        let crosses = LineSegment::intersections_with_steps(&segments_a, &segments_b);
+        let expected: HashSet<(u32, Point)> = [(40, Point{ x: 3, y: 3}), (30, Point{ x: 6, y: 5})].iter().cloned().collect();
+        assert_eq!(crosses.len(), 2);
+        assert_eq!(crosses, expected);
+        let steps = crosses.iter()
+            .map(|x| x.0)
+            .min_by(|x, y| x.cmp(&y));
+        assert_eq!(steps, Some(30));
+    }
+
+    #[test]
     fn test_examples() {
         {
-            let dist = super::minimal_distance_to_intersections("test1.txt");
-            assert_eq!(dist, Some(159))
+            let filename = "test1.txt";
+
+            let dist = super::minimal_distance_to_intersection(filename);
+            assert_eq!(dist, Some(159));
+
+            let steps = super::minimal_steps_to_intersection(filename);
+            assert_eq!(steps, Some(610))
         }
         {
-            let dist = super::minimal_distance_to_intersections("test2.txt");
-            assert_eq!(dist, Some(135))
+            let filename = "test2.txt";
+
+            let dist = super::minimal_distance_to_intersection(filename);
+            assert_eq!(dist, Some(135));
+            
+            let steps = super::minimal_steps_to_intersection(filename);
+            assert_eq!(steps, Some(410))
         }
     }
 }
 
 fn main() {
-    let dist = minimal_distance_to_intersections("input.txt");
+    let dist = minimal_distance_to_intersection("input.txt");
     match dist {
         Some(value) => println!("Part 1: {}", value),
         None => panic!("Part 1: Failed to find any intersections.")
+    }
+    let steps = minimal_steps_to_intersection("input.txt");
+    match steps {
+        Some(value) => println!("Part 2: {}", value),
+        None => panic!("Part 2: Failed to find any intersections.")
     }
 }
