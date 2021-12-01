@@ -19,8 +19,13 @@ fn count_increases(measurements: Vec<u32>) -> usize {
         .sum()
 }
 
-fn calculate(input: String) -> usize {
-    count_increases(transform_data(input))
+fn sum_sliding_windows(measurements: Vec<u32>) -> Vec<u32> {
+    measurements
+        .iter()
+        .as_slice()
+        .windows(3)
+        .map(|s| s.iter().sum())
+        .collect()
 }
 
 #[cfg(test)]
@@ -28,13 +33,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_calculate() {
+    fn test_p1() {
         let data = include_str!("../test.txt").to_string();
-        assert_eq!(7, calculate(data));
+        let measurements = transform_data(data);
+        assert_eq!(7, count_increases(measurements));
+    }
+
+    #[test]
+    fn test_p2() {
+        let data = include_str!("../test.txt").to_string();
+        let measurements = transform_data(data);
+        let sw_measurements = sum_sliding_windows(measurements);
+        assert_eq!(5, count_increases(sw_measurements));
     }
 }
 
 fn main() {
     let data = include_str!("../input.txt").to_string();
-    println!("Dec 1, part 1: {}", calculate(data));
+    let measurements = transform_data(data);
+    println!("Dec 1, part 1: {}", count_increases(measurements.clone()));
+
+    let sw_measurements = sum_sliding_windows(measurements);
+    println!("Dec 1, part 2: {}", count_increases(sw_measurements));
 }
