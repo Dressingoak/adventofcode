@@ -56,4 +56,17 @@ def compute(draws: list[int], boards: list[Board]):
             if result is not None:
                 return draw * result
 
+def compute_last(draws: list[int], boards: list[Board]):
+    won = [False for _ in boards]
+    for draw in draws:
+        for board in boards:
+            board.mark(draw)
+        for (i, board) in enumerate(boards):
+            result = board.check()
+            if result is not None:
+                if all(w for (j, w) in enumerate(won) if j != i) and won[i] == False:
+                    return draw * result
+                won[i] = True
+
 print("Dec 4, part 1: {}".format(compute(*read(file))))
+print("Dec 4, part 2: {}".format(compute_last(*read(file))))
