@@ -37,22 +37,31 @@ class LineSegment:
         else:
             raise Exception("Can only handle vertical or horizontal line segments.")
 
-    def get_points(self):
-        if self.p1.x == self.p2.x:
-            lower = min(self.p1.y, self.p2.y)
-            upper = max(self.p1.y, self.p2.y)
-            return set(Point(self.p1.x, y) for y in range(lower, upper + 1))
-        elif self.p1.y == self.p2.y:
-            left = min(self.p1.x, self.p2.x)
-            right = max(self.p1.x, self.p2.x)
-            return set(Point(x, self.p1.y) for x in range(left, right + 1))
-        else:
-            raise Exception("Can only handle vertical or horizontal line segments.")
-
     def overlap(self, other):
-        p1 = self.get_points()
-        p2 = other.get_points()
-        return p1.intersection(p2)
+        (c1, f1, l1, h1) = self.box()
+        (c2, f2, l2, h2) = other.box()
+        if c1 != c2:
+            if l1 <= f2 and h1 >= f2 and l2 <= f1 and h2 >= f1:
+                return {Point(f1 if c1 == 0 else f2, f1 if c1 == 1 else f2)}
+            else:
+                return set()
+        elif f1 == f2:
+            if l1 <= l2 and h1 >= l2 and h1 <= h2:
+                zs = range(l2, h1 + 1)
+            elif l2 <= l1 and h2 >= l1 and h2 <= h1:
+                zs = range(l1, h2 + 1)
+            elif l1 <= l2 and h1 >= h2:
+                zs = range(l2, h2 + 1)
+            elif l2 <= l1 and h2 >= h1:
+                zs = range(l1, h1 + 1)
+            else:
+                return set()
+            if c1 == 0:
+                return set(Point(f1, y) for y in zs)
+            else:
+                return set(Point(x, f1) for x in zs)     
+        else:
+            return set()
 
     def __str__(self) -> str:
         return "{} -> {}".format(self.p1, self.p2)
