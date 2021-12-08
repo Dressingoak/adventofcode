@@ -32,5 +32,5 @@ def compute_with_growing_cost(data: list[int]):
 
 data = read(file)
 
-print("Dec 6, part 1: {}".format(compute(data)))
-print("Dec 6, part 2: {}".format(compute_with_growing_cost(data)))
+print("Dec 7, part 1: {}".format(compute(data)))
+print("Dec 7, part 2: {}".format(compute_with_growing_cost(data)))
