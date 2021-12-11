@@ -67,6 +67,16 @@ def read(file: str) -> Grid:
 def advance_many(grid: Grid, n: int):
     return sum(grid.advance() for _ in range(n))
 
+def advance_until_all_flashes(grid: Grid):
+    c = 1
+    while grid.advance() != 100:
+        c += 1
+    return c
+
 grid = read(file)
 
 print("Dec 11, part 1: {}".format(advance_many(grid, 100)))
+
+grid = read(file)
+
+print("Dec 11, part 2: {}".format(advance_until_all_flashes(grid)))
