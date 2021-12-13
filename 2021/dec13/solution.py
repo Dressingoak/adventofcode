@@ -71,6 +71,20 @@ def fold(dots: set[Dot], fold_instruction: tuple[str, int]):
         case 'y': return set(dot.fold_horizontal(p) for dot in dots)
         case _: raise Exception("Unknown folding dimension: '{}'".format(d))
 
+def fold_all(dots: set[Dot], fold_instructions: list[tuple[str, int]]):
+    for fold_instruction in fold_instructions:
+        dots = fold(dots, fold_instruction)
+    return dots
+
+def print_dots(dots: set[Dot]) -> str:
+    width = max(d.x for d in dots) + 1
+    height = max(d.y for d in dots) + 1
+    paper = [["." for _ in range(width)] for _ in range(height)]
+    for dot in dots:
+        paper[dot.y][dot.x] = "#"
+    return "\n".join("".join(row) for row in paper)
+
 dots, fold_instructions = read(file)
 
 print("Dec 13, part 1: {}".format(len(fold(dots, fold_instructions[0]))))
+print("Dec 13, part 2:\n{}".format(print_dots(fold_all(dots, fold_instructions))))
