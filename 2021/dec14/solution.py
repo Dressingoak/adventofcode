@@ -18,34 +18,33 @@ def read(file: str) -> tuple[list[str], dict[tuple[str, str], str]]:
         pairs[(l, r)] = p
     return (template, pairs)
 
-def step(template: list[str], pairs: dict[tuple[str, str], str]):
-    new_template = []
-    for i in range(len(template) - 1):
-        new_template.append(template[i])
-        new_template.append(pairs[(template[i], template[i + 1])])
-    new_template.append(template[-1])
-    return new_template
+known = dict()
 
-def step_many(template: list[str], pairs: dict[tuple[str, str], str], n: int):
-    new_template = [_ for _ in template]
-    for _ in range(n):
-        new_template = step(new_template, pairs)
-    return new_template
-
-def distribution(template: list[str]):
-    counts = dict()
-    for char in template:
-        if char in counts:
-            counts[char] += 1
-        else:
-            counts[char] = 1
+def distribution_with_lookup(template: list[str], pairs: dict[tuple[str, str], str], n: int):
+    key = (n, tuple(template))
+    if key in known:
+        return known[key]
+    match template:
+        case [l, r] if n == 0:
+            counts = {l: 2} if l == r else {l: 1, r: 1}
+        case [l, r]:
+            counts = distribution_with_lookup([l, pairs[(l, r)], r], pairs, n - 1)
+        case _:
+            counts = {k: v for (k, v) in distribution_with_lookup(template[:2], pairs, n).items()}
+            counts[template[1]] -= 1
+            for (k, v) in distribution_with_lookup(template[1:], pairs, n).items():
+                if k in counts:
+                    counts[k] += v
+                else:
+                    counts[k] = v
+    known[key] = counts
     return counts
 
 def compute(template: list[str], pairs: dict[tuple[str, str], str], n: int):
-    final_template = step_many(template, pairs, 10)
-    dist = distribution(final_template)
+    dist = distribution_with_lookup(template, pairs, n)
     return max(dist.values()) - min(dist.values())
 
 template, pairs = read(file)
 
 print("Dec 14, part 1: {}".format(compute(template, pairs, 10)))
+print("Dec 14, part 2: {}".format(compute(template, pairs, 40)))
