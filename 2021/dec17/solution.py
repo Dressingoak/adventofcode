@@ -6,7 +6,7 @@ try:
 except:
     file = "input.txt"
 
-def read(file: str) -> list[bool]:
+def read(file: str) -> tuple[tuple[int, int], tuple[int, int]]:
     r = re.compile('target area: x=(-*\d+)\.\.(-*\d+), y=(-*\d+)\.\.(-*\d+)')
     f = open(file, "r")
     m = r.match(f.readline().strip())
