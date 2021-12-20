@@ -51,6 +51,8 @@ def read(file: str) -> list[Scanner]:
     scanners.append(Scanner(id, beacons))
     return scanners
 
+locations = dict()
+
 def compute(data: list[Scanner]):
     if len(data) == 1:
         return data[0]
@@ -66,8 +68,22 @@ def compute(data: list[Scanner]):
                         n = set(map(lambda b: (b[0] + d[0], b[1] + d[1], b[2] + d[2]), p.beacons))
                         I = m.intersection(n)
                         if len(I) >= 12:
+                            locations[s.id] = (0, 0, 0)
+                            locations[t.id] = d
                             return compute([Scanner(s.id, list(m.union(n)))] + [r for q, r in enumerate(data) if q != i and q != j + i + 1])
+
+def max_dist(dist: dict[int, tuple[int, int, int]]):
+    m = 0
+    for i, a in dist.items():
+        for j, b in dist.items():
+            if i >= j:
+                continue
+            m = max(m, sum([abs(a[0] - b[0]), abs(a[1] - b[1]), abs(a[2] - b[2])]))
+    return m
 
 data = read(file)
 
-print("Dec 19, part 1: {}".format(len(compute(data).beacons)))
+computed = compute(data)
+
+print("Dec 19, part 1: {}".format(len(computed.beacons)))
+print("Dec 19, part 2: {}".format(max_dist(locations)))
