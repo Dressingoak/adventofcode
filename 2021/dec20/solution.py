@@ -51,6 +51,13 @@ def read(file: str) -> tuple:
             img.append([1 if char == "#" else 0 for char in line])
     return iea, InfiniteImage(img, False)
 
+def enhance(iea: list[int], img: InfiniteImage, n: int):
+    if n == 0:
+        return img
+    else:
+        return enhance(iea, img.enhance(iea), n - 1)
+
 iea, data = read(file)
 
-print("Dec 20, part 1: {}".format(data.enhance(iea).enhance(iea).count_lit()))
+print("Dec 20, part 1: {}".format(enhance(iea, data, 2).count_lit()))
+print("Dec 20, part 2: {}".format(enhance(iea, data, 50).count_lit()))
