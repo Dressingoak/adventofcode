@@ -150,6 +150,17 @@ def sum_all(data: list[SnailfishNumber]) -> SnailfishNumber:
         s = s.add(r)
     return s
 
+def largest_pair_magnitude(data: list[SnailfishNumber]):
+    n = len(data)
+    m = 0
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                continue
+            m = max(m, data[i].add(data[j]).magnitude())
+    return m
+
 data = read(file)
 
 print("Dec 18, part 1: {}".format(sum_all(data).magnitude()))
+print("Dec 18, part 2: {}".format(largest_pair_magnitude(data)))
