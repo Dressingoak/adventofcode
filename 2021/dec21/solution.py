@@ -40,7 +40,7 @@ def trinomial(n: int, k: int):
     return sum(trinomial(n - 1, k + i) for i in range(-1, 2))
 
 def combinations(n: int) -> dict[int, int]:
-    """Number of ways to achieve a specific die sum by throwing n dice."""
+    """Number of ways to achieve a specific die sum by throwing n 3-sided dice."""
     c = dict()
     for k in range(-n, n + 1):
         c[k + 2 * n] = trinomial(n, k)
