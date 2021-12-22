@@ -31,24 +31,34 @@ def play_with_deterministic_dice(init: dict[int, int]):
         player %= 2
     return total_rolls * scores[player]
 
-def trinomial(n: int, k: int):
-    """Recursive definition of the trinomial coefficient: https://mathworld.wolfram.com/TrinomialCoefficient.html"""
-    if k < -n or k > n:
-        return 0
-    if n == 0:
-        return 1
-    return sum(trinomial(n - 1, k + i) for i in range(-1, 2))
+class Polynomial:
+    def __init__(self, coef: list[int]) -> None:
+        self.coef = coef
+        self.n = len(coef) - 1
 
-def combinations(n: int) -> dict[int, int]:
-    """Number of ways to achieve a specific die sum by throwing n 3-sided dice."""
-    c = dict()
-    for k in range(-n, n + 1):
-        c[k + 2 * n] = trinomial(n, k)
-    return c
+    def get(self, i):
+        try:
+            return self.coef[i]
+        except:
+            return 0
+
+    def mul(self, other):
+        n = self.n + other.n
+        return Polynomial([sum(self.get(i - j) * other.get(j) for j in range(i + 1)) for i in range(n + 1)])
+
+    def pow(self, n: int):
+        if n == 1:
+            return Polynomial([k for k in self.coef])
+        else:
+            return self.pow(n - 1).mul(self)
+
+def combinations(n: int, m: int) -> dict[int, int]:
+    """Number of ways to achieve a specific die sum by throwing n m-sided dice."""
+    return {i + n: k for i, k in enumerate(Polynomial([1,]*m).pow(n).coef)}
 
 known = dict()
 
-ways = combinations(3)
+ways = combinations(3, 3)
 
 def advance(p1, p2, s1, s2) -> tuple[int, int]:
     if (p1, p2, s1, s2) in known:
