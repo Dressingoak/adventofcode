@@ -61,7 +61,7 @@ def minimize(conf: set[tuple[str, int, int]]):
                 dst_y = 3
             blocked = False
             for _, l in filter(lambda k: k[0] == 1, positions.keys()):
-                if l > j and l < dst_x:
+                if (j < dst_x and l > j and l < dst_x) or (j > dst_x and l < j and l > dst_x):
                     blocked = True
                     break
             if blocked:
