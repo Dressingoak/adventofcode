@@ -81,7 +81,5 @@ def minimize(conf: set[tuple[str, int, int]]):
     return r
 
 data = read(file)
-print(minimize(data))
 
-# print("Dec 22, part 1: {}".format(reboot_initialization(Box((-50, 51), (-50, 51), (-50, 51)), r)))
-# print("Dec 22, part 2: {}".format(sum(b.volume() for b in r)))
+print("Dec 23, part 1: {}".format(minimize(data)))
