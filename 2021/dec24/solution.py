@@ -72,18 +72,17 @@ def monad_conditions(data: list[str]):
             conditions[j] = (i, -(conditions[j] + v))
     return [(i, j, d) for i, (j, d) in conditions.items()]
 
-def maximize_monad_conditions(conditions: list[tuple[int, int, int]]) -> int:
+def optimize_monad_conditions(conditions: list[tuple[int, int, int]], func) -> int:
     digits = []
     for i, j, d in conditions:
-        print(i, j, d)
-        wi = max(v for v in range(d + 1, d + 10) if v >= 1 and v < 10)
+        wi = func(d)
         digits.append((i, wi))
         wj = wi - d
         digits.append((j, wj))
-    print(sorted(digits))
     return sum(d * 10**i for i, (_, d) in enumerate(reversed(sorted(digits))))
 
 data = read(file)
 conditions = monad_conditions(data)
 
-print("Dec 24, part 1: {}".format(maximize_monad_conditions(conditions)))
+print("Dec 24, part 1: {}".format(optimize_monad_conditions(conditions, lambda d: max(v for v in range(d + 1, d + 10) if v >= 1 and v < 10))))
+print("Dec 24, part 2: {}".format(optimize_monad_conditions(conditions, lambda d: min(v for v in range(d + 1, d + 10) if v >= 1 and v < 10))))
