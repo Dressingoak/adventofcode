@@ -5,41 +5,85 @@ try:
 except:
     file = "input.txt"
 
-def read(file: str) -> set[tuple[str, int, int]]:
+def read(file: str) -> list[str]:
     f = open(file, "r")
     return [line for line in map(lambda x: x.strip(), f.readlines())]
 
-def alu(instructions: list[str], input: list[int], init: dict[str, int] = None):
-    c = 0
-    if init is not None:
-        vars = init
-    else:
-        vars = {k: 0 for k in ["w", "x", "y", "z"]}
-    def get(char: str):
-        try:
-            return int(char)
-        except:
-            return vars[char]
-    for ins in instructions:
-        match ins.split():
-            case ["inp", a]:
-                vars[a] = input[c]
-                c += 1
-            case ["add", a, b]: vars[a] += get(b)
-            case ["mul", a, b]: vars[a] *= get(b)
-            case ["div", a, b]: vars[a] //= get(b)
-            case ["mod", a, b]: vars[a] %= get(b)
-            case ["eql", a, b]: vars[a] = int(vars[a] == get(b))
-    return vars
+def monad_split(data: list[str]) -> list[list[str]]:
+    subroutines = []
+    r = -1
+    for ins in data:
+        if ins.split()[0] == "inp":
+            r += 1
+            subroutines.append([])
+        subroutines[r].append(ins)
+    return subroutines
 
-def largest_valid_model_number(monad: list[str]):
-    for i in range(10**14 - 1, 10**13 - 1, -1):
-        n = [int(_) for _ in str(i)]
-        if 0 in n:
-            continue
-        if alu(monad, [int(_) for _ in str(i)])["z"] == 0:
-            return i
+def monad_extract(data: list[str]) -> tuple[int, int]:
+    '''
+    The MONAD has the special structure where either of two cases can happen.
+
+    Case 1:
+        Simplifying the ALU:
+            z_new = (((((z % 26) + a) == w) == 0) * 25 + 1) * z + (w + b) * ((((z % 26) + a) == w) == 0)
+        where a > 9, meaning that this reduces to:
+            z_new = 26 * z + w + b
+    Case 2:
+        Simplifying the ALU:
+            z_new = (z // 26) * (((((z % 26) + c) == w) == 0) * 25 + 1) + (w + d) * ((((z % 26) + c) == w) == 0)
+        where c <= 0. This results in two cases:
+            z_new = (z // 26) * 26 + w + d if (z % 26) + c != 0
+
+            z_new = (z // 26) if (z % 26) + c != 0
+        The latter case means that z will (potentially) be reduced, and can eventually reach 0.
+    There are 7 Case 1 and 7 Case 2, so a Case 1 (i) followed by a Case 2 (j) implies the condition:
+        w_j = w_i + b_i + c_j <=> w_i - w_j = -(b_i + c_j),
+    i.e. a restriction on the difference between the digits coming from the cancelling cases.
+    '''
+    c = None
+    v = None
+    for ins in data:
+        match ins.split():
+            case ["div", "z", "1"]: c = 0
+            case ["add", "y", a] if c == 0:
+                try:
+                    v = int(a)
+                except:
+                    continue
+            case ["div", "z", "26"]: c = 1
+            case ["add", "x", a] if c == 1:
+                try:
+                    v = int(a)
+                except:
+                    continue
+    return c, v
+
+def monad_conditions(data: list[str]):
+    j = -1
+    stack = []
+    conditions = dict()
+    for i, subroutine in enumerate(monad_split(data)):
+        c, v = monad_extract(subroutine)
+        if c == 0:
+            stack.append(i)
+            conditions[i] = v
+        else:
+            j = stack.pop()
+            conditions[j] = (i, -(conditions[j] + v))
+    return [(i, j, d) for i, (j, d) in conditions.items()]
+
+def maximize_monad_conditions(conditions: list[tuple[int, int, int]]) -> int:
+    digits = []
+    for i, j, d in conditions:
+        print(i, j, d)
+        wi = max(v for v in range(d + 1, d + 10) if v >= 1 and v < 10)
+        digits.append((i, wi))
+        wj = wi - d
+        digits.append((j, wj))
+    print(sorted(digits))
+    return sum(d * 10**i for i, (_, d) in enumerate(reversed(sorted(digits))))
 
 data = read(file)
+conditions = monad_conditions(data)
 
-print("Dec 24, part 1: {}".format(largest_valid_model_number(data)))
+print("Dec 24, part 1: {}".format(maximize_monad_conditions(conditions)))
