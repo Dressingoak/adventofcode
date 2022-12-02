@@ -19,10 +19,10 @@ def calculate_part1(file: str):
         pass
     return 0
 
-def calculate_part2(file: str):
-    with open(file, "r") as f:
-        pass
-    return 0
+# def calculate_part2(file: str):
+#     with open(file, "r") as f:
+#         pass
+#     return 0
     
 if __name__ == '__main__':
     try:
@@ -31,13 +31,13 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec {day}, part 1: {{}}".format(calculate_part1(file)))
-    print("Dec {day}, part 2: {{}}".format(calculate_part2(file)))
+    # print("Dec {day}, part 2: {{}}".format(calculate_part2(file)))
 """)
     f.close()
 
     f = open(f"{folder}/test.py", "a")
     f.write(f"""import unittest
-from solution import calculate_part1, calculate_part2;
+from solution import calculate_part1 #, calculate_part2;
 
 class TestDec{day}(unittest.TestCase):
 
@@ -46,8 +46,8 @@ class TestDec{day}(unittest.TestCase):
     def test_part1(self):
         self.assertEqual(calculate_part1(self.file), 0)
 
-    def test_part2(self):
-        self.assertEqual(calculate_part2(self.file), 0)
+    # def test_part2(self):
+    #     self.assertEqual(calculate_part2(self.file), 0)
 
 if __name__ == '__main__':
     unittest.main()
