@@ -20,10 +20,15 @@ def calculate_part1(file: str):
             s += score(player, opponent)
     return s
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part2(file: str):
+    s = 0
+    with open(file, "r") as f:
+        for line in f.readlines():
+            (opponent, outcome) = line.strip().split(" ")
+            v2, o = to_num(opponent), to_num(outcome)
+            v1 = (v2 + o - 1) % 3
+            s += o * 3 + v1 + 1
+    return s
     
 if __name__ == '__main__':
     try:
@@ -32,4 +37,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 2, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 2, part 2: {}".format(calculate_part2(file)))
+    print("Dec 2, part 2: {}".format(calculate_part2(file)))
