@@ -15,8 +15,6 @@ def get_common(arrangement: str) -> str:
         case [x]: return x
         case _: raise Exception("Not exactly one common item!")
 
-print(get_common("ttgJtRGJQctTZtZT"))
-
 def calculate_part1(file: str):
     s = 0
     with open(file, "r") as f:
@@ -28,10 +26,23 @@ def calculate_part1(file: str):
             s += priority(c)
     return s
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def get_common_group(arrangements: list[str]) -> str:
+    sets = [set(_) for _ in arrangements]
+    common = sets.pop()
+    for s in sets:
+        common.intersection_update(s)
+    match [_ for _ in common]:
+        case [x]: return x
+        case _: raise Exception("Not exactly one common item!")
+
+def calculate_part2(file: str):
+    s = 0
+    with open(file, "r") as f:
+        lines = [line.strip() for line in f.readlines() if line.strip() != ""]
+        for i in range(0, len(lines), 3):
+            c = get_common_group(lines[i:i+3])
+            s += priority(c)
+    return s
     
 if __name__ == '__main__':
     try:
@@ -40,4 +51,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 3, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 3, part 2: {}".format(calculate_part2(file)))
+    print("Dec 3, part 2: {}".format(calculate_part2(file)))
