@@ -7,14 +7,6 @@ def priority(char: str) -> int:
     elif ascii >= 65 and ascii <= 90:
         return ascii - 38 # A..Z => 27..52
 
-def get_common(arrangement: str) -> str:
-    n = len(arrangement)
-    m = n // 2
-    l, r = set(arrangement[0:m]), set(arrangement[m:n])
-    match [_ for _ in l.intersection(r)]:
-        case [x]: return x
-        case _: raise Exception("Not exactly one common item!")
-
 def calculate_part1(file: str):
     s = 0
     with open(file, "r") as f:
@@ -22,26 +14,23 @@ def calculate_part1(file: str):
             arrangement = line.strip()
             if arrangement == "":
                 continue
-            c = get_common(arrangement)
-            s += priority(c)
+            n = len(arrangement)
+            m = n // 2
+            match [_ for _ in  set(arrangement[0:m]).intersection(set(arrangement[m:n]))]:
+                case [x]: s += priority(x)
+                case _: raise Exception("Not exactly one common item!")
     return s
-
-def get_common_group(arrangements: list[str]) -> str:
-    sets = [set(_) for _ in arrangements]
-    common = sets.pop()
-    for s in sets:
-        common.intersection_update(s)
-    match [_ for _ in common]:
-        case [x]: return x
-        case _: raise Exception("Not exactly one common item!")
 
 def calculate_part2(file: str):
     s = 0
     with open(file, "r") as f:
         lines = [line.strip() for line in f.readlines() if line.strip() != ""]
         for i in range(0, len(lines), 3):
-            c = get_common_group(lines[i:i+3])
-            s += priority(c)
+            common = set(lines[i])
+            [common.intersection_update(set(lines[j])) for j in range(i+1,i+3)]
+            match [_ for _ in common]:
+                case [x]: s += priority(x)
+                case _: raise Exception("Not exactly one common item!")
     return s
     
 if __name__ == '__main__':
