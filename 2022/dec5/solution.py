@@ -49,10 +49,15 @@ def calculate_part1(file: str):
     indices.sort()
     return "".join(crates[i].pop() for i in indices)
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part2(file: str):
+    crates, instructions = parse(file)
+    for (stacks, src, dst) in instructions:
+        moved = [crates[src].pop() for _ in range(stacks)]
+        moved.reverse()
+        crates[dst].extend(moved)
+    indices = [_ for _ in crates.keys()]
+    indices.sort()
+    return "".join(crates[i].pop() for i in indices)
     
 if __name__ == '__main__':
     try:
@@ -61,4 +66,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 5, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 5, part 2: {}".format(calculate_part2(file)))
+    print("Dec 5, part 2: {}".format(calculate_part2(file)))
