@@ -7,30 +7,24 @@ def parse(file: str):
 
     with open(file, "r") as f:
         search_crates = True
-
         for line in f.readlines():
             if line.strip() == "":
-                search_crates == False
+                search_crates = False
+                continue
             if search_crates:
                 pos = 1
-                matches = re.finditer(r'(\s(?P<stack>\d)\s)|(\[(?P<crate>\w)\]\s?)|(?P<empty>\s{3,4})', line.rstrip())
-                c = 0
-                for m in matches:
-                    c += 1
-                    match (m.group("empty"), m.group("crate"), m.group("stack")):
-                        case (_, None, None): # Empty space
-                            pos += 1
-                        case (None, crate, None): # Crate
-                            if pos in crates:
-                                crates[pos].append(crate)
-                            else:
-                                crates[pos] = [crate]
-                            pos += 1
-                        case (None, None, _): # Stack label
-                            if pos not in crates:
-                                crates[pos] = []
-                if c == 0 and len(crates.values()) > 0:
-                    search_crates = False
+                for i in range(1, len(line), 4):
+                    crate = line[i]
+                    ascii = ord(crate)
+                    if ascii >= 65 and ascii <= 90:
+                        if pos in crates:
+                            crates[pos].append(crate)
+                        else:
+                            crates[pos] = [crate]
+                    elif ascii >= 40 and ascii <= 57:
+                        if pos not in crates:
+                            crates[pos] = []
+                    pos += 1
             else:
                 m = re.match(r'move (\d+) from (\d) to (\d)', line)
                 (stacks, src, dst) = m.group(1, 2, 3)
