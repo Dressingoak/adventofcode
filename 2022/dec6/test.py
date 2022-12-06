@@ -1,5 +1,5 @@
 import unittest
-from solution import calculate_part1 #, calculate_part2;
+from solution import calculate_part1, calculate_part2;
 
 class TestDec6(unittest.TestCase):
 
@@ -8,8 +8,8 @@ class TestDec6(unittest.TestCase):
     def test_part1(self):
         self.assertEqual(calculate_part1(self.file), 7)
 
-    # def test_part2(self):
-    #     self.assertEqual(calculate_part2(self.file), 0)
+    def test_part2(self):
+        self.assertEqual(calculate_part2(self.file), 19)
 
 if __name__ == '__main__':
     unittest.main()
