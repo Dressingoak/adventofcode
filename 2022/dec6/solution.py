@@ -14,7 +14,6 @@ def calculate_part2(file: str):
     with open(file, "r") as f:
         line = f.readline()
         return first_n_distinct(line, 14)
-    return 0
     
 if __name__ == '__main__':
     try:
