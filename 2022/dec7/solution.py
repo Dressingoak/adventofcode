@@ -17,7 +17,7 @@ def dir_size(dir, sizes, prefix=""):
             s += size
     return s
 
-def calculate_part1(file: str):
+def get_all_dir_sizes(file: str):
     with open(file, "r") as f:
         cur, files = [], {}
         for line in f.readlines():
@@ -35,13 +35,16 @@ def calculate_part1(file: str):
                     loc[f] = int(size)
     contents = {}
     dir_size({"/": files}, contents)
+    return contents
+
+def calculate_part1(file: str):
+    contents = get_all_dir_sizes(file)
     return sum(s for s in contents.values() if s <= 100000)
 
-
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part2(file: str):
+    contents = get_all_dir_sizes(file)
+    needed = 30000000 - (70000000 - contents["/"])
+    return min(s for s in contents.values() if s >= needed)
     
 if __name__ == '__main__':
     try:
@@ -50,4 +53,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 7, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 7, part 2: {}".format(calculate_part2(file)))
+    print("Dec 7, part 2: {}".format(calculate_part2(file)))
