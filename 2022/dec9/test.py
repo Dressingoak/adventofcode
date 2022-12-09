@@ -1,15 +1,19 @@
 import unittest
-from solution import calculate_part1 #, calculate_part2;
+from solution import calculate
 
 class TestDec9(unittest.TestCase):
 
-    file = "test.txt"
+    file1 = "test.txt"
+    file2 = "test2.txt"
 
-    def test_part1(self):
-        self.assertEqual(calculate_part1(self.file), 13)
+    def test_2knots_ex1(self):
+        self.assertEqual(calculate(self.file1, 2), 13)
 
-    # def test_part2(self):
-    #     self.assertEqual(calculate_part2(self.file), 0)
+    def test_10knots_ex1(self):
+        self.assertEqual(calculate(self.file1, 10), 1)
+
+    def test_10knots_ex2(self):
+        self.assertEqual(calculate(self.file2, 10), 36)
 
 if __name__ == '__main__':
     unittest.main()

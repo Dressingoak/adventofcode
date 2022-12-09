@@ -1,45 +1,42 @@
 import sys
 
-def in_range(p1, p2):
-    for i in range(p1[0]-1, p1[0]+2):
-        for j in range(p1[1]-1, p1[1]+2):
-            if (i, j) == p2:
-                return True
-    return False
+def ceilhalf(x):
+    return - (x // -2) if x > 0 else x // 2
 
-def advance(h, t, dir):
+def advance_head(h, dir):
     match dir:
-        case "L" | "R":
-            d = 1 if dir == "R" else -1
-            hx = (h[0] + d, h[1])
-            return (hx, (t[0] + d, t[1] + hx[1] - t[1])) if not in_range(hx, t) else (hx, t)
-        case "U" | "D":
-            d = 1 if dir == "U" else -1
-            hx = (h[0], h[1] + d)
-            return (hx, (t[0] + hx[0] - t[0], t[1] + d)) if not in_range(hx, t) else (hx, t)
+        case "L": delta = (-1, 0)
+        case "R": delta = (1, 0)
+        case "U": delta = (0, 1)
+        case "D": delta = (0, -1)
+    match (h, delta):
+        case ((x, y), (dx, dy)): return (x + dx, y + dy)
 
-def calculate_part1(file: str):
+def advance_tail(h, t):
+    match (h, t):
+        case ((hx, hy), (tx, ty)): delta = (hx - tx, hy - ty)
+    match delta:
+        case (dx, dy) if max(abs(dx), abs(dy)) < 2: return t
+        case (dx, dy) if max(abs(dx), abs(dy)) < 3: return (t[0] + ceilhalf(dx), t[1] + ceilhalf(dy))
+
+def calculate(file: str, n: int):
     positions = set()
-    h, t = (0, 0), (0, 0)
-    positions.add(t)
+    rope = [(0, 0), ] * n
     with open(file, "r") as f:
         for line in f.readlines():
             (dir, steps) = line.strip().split(" ")
             for _ in range(int(steps)):
-                h, t = advance(h, t, dir)
-                positions.add(t)
+                rope[0] = advance_head(rope[0], dir)
+                for i in range(1, n):
+                    rope[i] = advance_tail(rope[i-1], rope[i])
+                positions.add(rope[-1])
     return len(positions)
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
-    
 if __name__ == '__main__':
     try:
         file = sys.argv[1]
     except:
         file = "input.txt"
 
-    print("Dec 9, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 9, part 2: {}".format(calculate_part2(file)))
+    print("Dec 9, part 1: {}".format(calculate(file, 2)))
+    print("Dec 9, part 2: {}".format(calculate(file, 10)))
