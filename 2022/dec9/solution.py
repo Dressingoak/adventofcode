@@ -3,15 +3,6 @@ import sys
 def ceilhalf(x):
     return - (x // -2) if x > 0 else x // 2
 
-def advance_head(h, dir):
-    match dir:
-        case "L": delta = (-1, 0)
-        case "R": delta = (1, 0)
-        case "U": delta = (0, 1)
-        case "D": delta = (0, -1)
-    match (h, delta):
-        case ((x, y), (dx, dy)): return (x + dx, y + dy)
-
 def advance_tail(h, t):
     match (h, t):
         case ((hx, hy), (tx, ty)): delta = (hx - tx, hy - ty)
@@ -25,8 +16,13 @@ def calculate(file: str, n: int):
     with open(file, "r") as f:
         for line in f.readlines():
             (dir, steps) = line.strip().split(" ")
+            match dir:
+                case "L": dx, dy = -1, 0
+                case "R": dx, dy = 1, 0
+                case "U": dx, dy = 0, 1
+                case "D": dx, dy = 0, -1
             for _ in range(int(steps)):
-                rope[0] = advance_head(rope[0], dir)
+                rope[0] = (rope[0][0] + dx, rope[0][1] + dy)
                 for i in range(1, n):
                     rope[i] = advance_tail(rope[i-1], rope[i])
                 positions.add(rope[-1])
