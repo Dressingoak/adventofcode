@@ -17,10 +17,14 @@ def cpu(file: str):
 def calculate_part1(file: str):
     return sum(cycle * X for cycle, X in cpu(file) if cycle % 40 - 20 == 0)
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part2(file: str):
+    s = ""
+    for cycle, X in cpu(file):
+        pos = (cycle - 1) % 40
+        if pos == 0:
+            s += "\n"
+        s += "#" if pos >= X - 1 and pos < X + 2 else "."
+    return s
     
 if __name__ == '__main__':
     try:
@@ -29,4 +33,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 10, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 10, part 2: {}".format(calculate_part2(file)))
+    print("Dec 10, part 2: {}".format(calculate_part2(file)))
