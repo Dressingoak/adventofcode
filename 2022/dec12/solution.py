@@ -63,12 +63,15 @@ def dijkstra(g: dict[int, dict[int, int]], s: int, t: int) -> int:
         if u == t:
             return d
         for v, x in g[u].items():
-            alt = dist[u] + x
+            try:
+                alt = dist[u] + x
+            except:
+                return None
             if dist[v] is None or alt < dist[v]:
                 dist[v] = alt
                 Q.insert(v, alt)
 
-def calculate_part1(file: str):
+def parse(file: str):
     with open(file, "r") as f:
         hmap = []
         for i, line in enumerate(f.readlines()):
@@ -101,12 +104,20 @@ def calculate_part1(file: str):
                 adj[(i, j+1)] = 1
             graph[(i, j)] = adj
 
+    return hmap, graph, rows, cols, start, end
+
+def calculate_part1(file: str):
+    _, graph, _, _, start, end = parse(file)
     return dijkstra(graph, start, end)
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part2(file: str):
+    hmap, graph, rows, cols, _, end = parse(file)
+    starting_points = []
+    for i in range(rows):
+        for j in range(cols):
+            if hmap[i][j] == ord("a"):
+                starting_points.append((i,j))        
+    return min(d for d in [dijkstra(graph, start, end) for start in starting_points] if d is not None)
     
 if __name__ == '__main__':
     try:
@@ -115,4 +126,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 12, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 12, part 2: {}".format(calculate_part2(file)))
+    print("Dec 12, part 2: {}".format(calculate_part2(file)))
