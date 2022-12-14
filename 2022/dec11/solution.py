@@ -24,14 +24,14 @@ class Monkey:
     def catch(self, item):
         self.items.append(item)
 
-def parse_op(op, rhs):
+def parse_op(op, rhs, mod=None):
     match (op, rhs):
-        case ("*", v) if v == "old": return lambda x: x**2
-        case ("*", v): return lambda x: x * int(v)
-        case ("+", v): return lambda x: x + int(v)
+        case ("*", v) if v == "old": return lambda x: x**2 if mod is None else (x % mod)**2
+        case ("*", v): return lambda x: x * int(v) if mod is None else (x % mod) * (int(v) % mod)
+        case ("+", v): return lambda x: x + int(v) if mod is None else (x % mod) + (int(v) % mod)
         case _: raise Exception(f"Could not parse \"new = old {op} {rhs}\"")
 
-def parse(file: str):
+def parse(file: str, mod=False):
     pattern = re.compile(r"Monkey (?P<id>\d):\s+Starting items: (?P<items>[\d, ]+\d)+\s+Operation: new = old (?P<op>\+|\*) (?P<rhs>old|\d+)\s+Test: divisible by (?P<test>\d+)\s+If true: throw to monkey (?P<true>\d)\s+If false: throw to monkey (?P<false>\d)")
     with open(file, "r") as f:
         s = f.read()
@@ -40,8 +40,8 @@ def parse(file: str):
     for m in re.finditer(pattern, s):
         d = m.groupdict()
         items = [int(_) for _ in d["items"].split(", ")]
-        op = parse_op(d["op"], d["rhs"])
         test = int(d["test"])
+        op = parse_op(d["op"], d["rhs"], test if mod else None)
         true = int(d["true"])
         false = int(d["false"])
         if int(d["id"]) == len(monkeys):
@@ -62,10 +62,31 @@ def calculate_part1(file: str):
     match inspections:
         case [a, b, *_]: return a * b
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part2(file: str):
+    monkeys = parse(file)
+    ops, mods, maps, inits, inspections = {}, {}, {}, [], {}
+    for i, monkey in enumerate(monkeys):
+        ops[i] = monkey.op
+        mods[i] = monkey.test
+        maps[i] = (monkey.true, monkey.false)
+        inits.extend([(i, init) for init in monkey.items])
+        inspections[i] = 0
+
+    for (start, init) in inits:
+        i = start
+        prev = {j: init % mods[j] for j in mods.keys()}
+        r = 1
+        while r <= 10000:
+            inspections[i] += 1
+            next = {j: ops[i](prev[j]) % mods[j] for j in prev.keys()}
+            k = maps[i][0] if next[i] == 0 else maps[i][1]
+            prev = next
+            if k <= i:
+                r += 1
+            i = k
+
+    match sorted(inspections.values(), reverse=True):
+        case [a, b, *_]: return a * b
     
 if __name__ == '__main__':
     try:
@@ -74,4 +95,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 11, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 11, part 2: {}".format(calculate_part2(file)))
+    print("Dec 11, part 2: {}".format(calculate_part2(file)))
