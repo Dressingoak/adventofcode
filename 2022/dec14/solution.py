@@ -25,6 +25,14 @@ def parse_cave(file: str):
                         prev = (x1, y1)
     return cave
 
+def add_floor(cave: dict[int, dict[int, str]]):
+    b = max(y for ys in cave.values() for y in ys.keys()) + 2
+    for x in range(500 - b, 500 + b + 1):
+        if x in cave:
+            cave[x][b] = "#"
+        else:
+            cave[x] = {b: "#"}
+
 def show_cave(cave: dict[int, dict[int, str]]):
     x0, x1 = min(cave.keys()), max(cave.keys())
     y0 = min(y for ys in cave.values() for y in ys.keys())
@@ -43,7 +51,9 @@ def simulate(cave: dict[int, dict[int, str]], cur: tuple[int, int] | None = None
     match cur:
         case None: # Source sand from starting position
             return simulate(cave, (500, 0))
-        case (x, y):
+        case (x, y) if x in cave and y in cave[x]: # No space for sand
+            return None
+        case (x, y): # Position is free, simulate
             if x not in cave: # Stuff is falling to the abyss
                 return None
             highest = min(j for j in cave[x].keys() if j > y) # Highest rock/sand below current y-pos
@@ -62,8 +72,7 @@ def simulate(cave: dict[int, dict[int, str]], cur: tuple[int, int] | None = None
                     return None
                 return (x, highest - 1) # Sand is at rest here
 
-def calculate_part1(file: str, show=False):
-    cave = parse_cave(file)
+def simulate_many(cave):
     c = 0
     while True:
         match simulate(cave):
@@ -71,14 +80,22 @@ def calculate_part1(file: str, show=False):
                 c += 1
                 cave[x][y] = "o"
             case None: break
+    return c
+
+def calculate_part1(file: str, show=False):
+    cave = parse_cave(file)
+    c = simulate_many(cave)
     if show:
         print(show_cave(cave))
     return c
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part2(file: str, show=False):
+    cave = parse_cave(file)
+    add_floor(cave)
+    c = simulate_many(cave)
+    if show:
+        print(show_cave(cave))
+    return c
     
 if __name__ == '__main__':
     try:
@@ -87,4 +104,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 14, part 1: {}".format(calculate_part1(file, show=True)))
-    # print("Dec 14, part 2: {}".format(calculate_part2(file)))
+    print("Dec 14, part 2: {}".format(calculate_part2(file, show=True)))
