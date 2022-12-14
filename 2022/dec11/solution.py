@@ -72,25 +72,18 @@ def calculate_part2(file: str):
         inits.extend([(i, init) for init in monkey.items])
         inspections[i] = 0
 
-    def get(i, prev):
-        next = {j: ops[i](prev[j]) % mods[j] for j in prev.keys()}
-        k = maps[i][0] if next[i] == 0 else maps[i][1]
-        return k, next
-
-    def yielder(start, init, r_max):
+    for (start, init) in inits:
         i = start
         prev = {j: init % mods[j] for j in mods.keys()}
         r = 1
-        while r <= r_max:
-            yield i
-            k, prev = get(i, prev)
+        while r <= 10000:
+            inspections[i] += 1
+            next = {j: ops[i](prev[j]) % mods[j] for j in prev.keys()}
+            k = maps[i][0] if next[i] == 0 else maps[i][1]
+            prev = next
             if k <= i:
                 r += 1
             i = k
-
-    for (i, init) in inits:
-        for j in yielder(i, init, 10000):
-            inspections[j] += 1
 
     match sorted(inspections.values(), reverse=True):
         case [a, b, *_]: return a * b
