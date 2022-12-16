@@ -21,6 +21,24 @@ def calculate_part1(file: str, row):
     occupied.difference_update(beacons)
     return len(occupied)
 
+class Polygon:
+    def __init__(self, points):
+        self.points = points
+    
+    def from_sensor_and_beacon(sensor, beacon):
+        match (sensor, beacon):
+            case ((sx, sy), (bx, by)):
+                dist = abs(bx - sx) + abs(by - sy)
+                return Polygon([
+                    (sx, sy + dist),
+                    (sx + dist, sy)
+                    (sx, sy - dist)
+                    (sx - dist, sy)
+                ])
+
+    def diff(self, other):
+        
+
 # def calculate_part2(file: str):
 #     with open(file, "r") as f:
 #         pass
