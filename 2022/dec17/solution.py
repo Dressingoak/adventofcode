@@ -27,9 +27,9 @@ class Chamber:
         self.width = 7
         self.height = 0
         self.jets = parse_jets(file) # list of -1 (<) and 1 (>)
-        self.jet_index = -1
+        self.jet_index, self.jet_len = -1, len(self.jets)
         self.shapes = parse_shapes(shape_file) # Coordinates for the shapes
-        self.shape_index = -1
+        self.shape_index, self.shape_len = -1, len(self.shapes)
         self.rocks = [] # Row-major matrix of rock positions
 
     def get_nearest_below(self, i, j):
@@ -58,12 +58,12 @@ class Chamber:
 
     def get_next_jet(self):
         self.jet_index += 1
-        self.jet_index %= len(self.jets)
+        self.jet_index %= self.jet_len
         return self.jets[self.jet_index]
 
     def get_next_rock(self):
         self.shape_index += 1
-        self.shape_index %= len(self.shapes)
+        self.shape_index %= self.shape_len
         height = self.get_height()
         return [(i + height + 3, j + 2) for i, j in self.shapes[self.shape_index]]
     
@@ -107,6 +107,29 @@ class Chamber:
                 break
         for i, j in rock:
             self.set(i, j)
+        return (self.shape_index, self.jet_index)
+
+    def simulate_many(self):
+        rocks = 0
+        yield (0, 0, 0, 0)
+        while True:
+            (shape, jet) = self.simulate()
+            rocks += 1
+            yield (shape, jet, rocks, self.get_height())
+
+    def simulate_until_cycle(self, rocks):
+        known = {}
+        for (shape, jet, stopped_rocks, height) in self.simulate_many():
+            if (shape, jet) in known:
+                old_stopped_rocks, old_height = known[(shape, jet)]
+                rows = height - old_height
+                cycle = stopped_rocks - old_stopped_rocks
+                if (rocks - stopped_rocks) % cycle == 0:
+                    return stopped_rocks, height, rows, cycle
+                else:
+                    known[(shape, jet)] = (stopped_rocks, height)
+            else:
+                known[(shape, jet)] = (stopped_rocks, height)
 
     def visualize(self):
         h = self.get_height() + 2
@@ -128,10 +151,12 @@ def calculate_part1(file: str, shape_file: str):
         chamber.simulate()
     return chamber.get_height()
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part2(file: str, shape_file: str):
+    rocks = 1_000_000_000_000
+    chamber = Chamber(file, shape_file)
+    stopped_rocks, height, rows, cycle = chamber.simulate_until_cycle(rocks) # Full disclosure, inspired by animation on Reddit: https://www.reddit.com/r/adventofcode/comments/zo27vf/2022_day_17_part_2_rocks_fall_nobody_dies/
+    cycles_left = (rocks - stopped_rocks) // cycle
+    return height + cycles_left * rows
     
 if __name__ == '__main__':
     try:
@@ -144,4 +169,4 @@ if __name__ == '__main__':
         shape_file = "shapes.txt"
 
     print("Dec 17, part 1: {}".format(calculate_part1(file, shape_file)))
-    # print("Dec 17, part 2: {}".format(calculate_part2(file)))
+    print("Dec 17, part 2: {}".format(calculate_part2(file, shape_file)))
