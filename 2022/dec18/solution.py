@@ -1,4 +1,5 @@
 import sys
+sys.path.append('../')
 from path_finding import dijkstra
 
 Cube = tuple[int, int, int]

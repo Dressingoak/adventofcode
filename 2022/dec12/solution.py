@@ -1,75 +1,6 @@
 import sys
-
-class MinPriorityQueue:
-    def __init__(self) -> None:
-        self.keys = dict()
-        self.data = []
-
-    def __len__(self):
-        return len(self.data)
-
-    def swap(self, i, j):
-        self.keys[self.data[i][0]], self.keys[self.data[j][0]] = j, i
-        self.data[i], self.data[j] = self.data[j], self.data[i]
-
-    def sift_up(self, i):
-        if i == 0:
-            return
-        j = (i - 1) // 2
-        match [self.data[i][1], self.data[j][1]]:
-            case [None, x]: return
-            case [x, y] if y is None or x < y:
-                self.swap(i, j)
-                self.sift_up(j)
-
-    def sift_down(self, i):
-        children = [j for j in [2 * i + 1, 2 * i + 2] if j < len(self.data) and self.data[j][1] is not None]
-        if len(children) > 0:
-            j = min(children, key = lambda k: self.data[k][1])
-            if self.data[i][1] is None or self.data[j][1] < self.data[i][1]:
-                self.swap(i, j)
-                self.sift_down(j)
-    
-    def insert(self, key, value):
-        if key in self.keys:
-            i = self.keys[key]
-            self.data[i] = (key, value)
-        else:
-            i = len(self.data)
-            self.data.append((key, value))
-            self.keys[key] = i
-        self.sift_up(i)
-
-    def pop(self):
-        if len(self.data) > 0:
-            self.swap(0, len(self.data) - 1)
-            key, value = self.data.pop()
-            self.sift_down(0)
-            del self.keys[key]
-            return (key, value)
-        else:
-            return
-
-def dijkstra(g: dict[int, dict[int, int]], s: int, t: int) -> int:
-    Q = MinPriorityQueue()
-    dist = dict()
-    for v in g.keys():
-        Q.insert(v, None)
-        dist[v] = None
-    dist[s] = 0
-    Q.insert(s, 0)
-    while len(Q) > 0:
-        u, d = Q.pop()
-        if u == t:
-            return d
-        for v, x in g[u].items():
-            try:
-                alt = dist[u] + x
-            except:
-                return None
-            if dist[v] is None or alt < dist[v]:
-                dist[v] = alt
-                Q.insert(v, alt)
+sys.path.append('../')
+from path_finding import dijkstra
 
 def parse(file: str):
     with open(file, "r") as f:
@@ -108,7 +39,8 @@ def parse(file: str):
 
 def calculate_part1(file: str):
     _, graph, _, _, start, end = parse(file)
-    return dijkstra(graph, start, end)
+    shortest, _ = dijkstra(graph, start, end)
+    return shortest
 
 def calculate_part2(file: str):
     hmap, graph, rows, cols, _, end = parse(file)
@@ -117,7 +49,7 @@ def calculate_part2(file: str):
         for j in range(cols):
             if hmap[i][j] == ord("a"):
                 starting_points.append((i,j))        
-    return min(d for d in [dijkstra(graph, start, end) for start in starting_points] if d is not None)
+    return min(d for d, _ in [dijkstra(graph, start, end) for start in starting_points] if d is not None)
     
 if __name__ == '__main__':
     try:
