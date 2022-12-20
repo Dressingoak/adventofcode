@@ -83,11 +83,19 @@ def calculate_part1(file: str):
         quality_level_sum += id * max(-value for value in states.values())
     return quality_level_sum
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
-    
+def calculate_part2(file: str):
+    geodes = 1
+    for id, blueprint in parse(file):
+        if id > 3:
+            break
+        start = (32, 1, 0, 0, 0, 0, 0, 0, 0, True, True, True, True)
+        graph = {}
+        build_states(graph, start, blueprint)
+        _, states = dijkstra(graph, start, None)
+        geodes *= max(-value for value in states.values())
+        print(f"[Finished simulation for blueprint {id} ({geodes} geodes, {len(graph)} states simulated)]")
+    return geodes
+
 if __name__ == '__main__':
     try:
         file = sys.argv[1]
@@ -95,4 +103,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 19, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 19, part 2: {}".format(calculate_part2(file)))
+    print("Dec 19, part 2: {}".format(calculate_part2(file)))
