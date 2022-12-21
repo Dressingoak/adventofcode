@@ -67,25 +67,35 @@ class DoubleLinkedList:
         self.n += 1
         return
 
-def calculate_part1(file: str):
-    orig = []
-    with open(file, "r") as f:
-        for i, line in enumerate(f.readlines()):
-            x = int(line.strip())
-            orig.append((i, x))
-    numbers = DoubleLinkedList(orig)
-    for x in orig:
-        numbers.move(x, x[1])
+def extract(numbers: DoubleLinkedList):
     s, (cur, _) = 0, numbers.find(lambda x: x[1] == 0)
     for _ in range(3):
         cur, _ = numbers.traverse(cur, 1000)
         s += cur[1]
     return s
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part1(file: str):
+    original = []
+    with open(file, "r") as f:
+        for i, line in enumerate(f.readlines()):
+            x = int(line.strip())
+            original.append((i, x))
+    numbers = DoubleLinkedList(original)
+    for x in original:
+        numbers.move(x, x[1])
+    return extract(numbers)
+
+def calculate_part2(file: str):
+    original = []
+    with open(file, "r") as f:
+        for i, line in enumerate(f.readlines()):
+            x = int(line.strip())
+            original.append((i, x * 811589153))
+    numbers = DoubleLinkedList(original)
+    for _ in range(10):
+        for x in original:
+            numbers.move(x, x[1])
+    return extract(numbers)
     
 if __name__ == '__main__':
     try:
@@ -94,4 +104,4 @@ if __name__ == '__main__':
         file = "input.txt"
 
     print("Dec 20, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 20, part 2: {}".format(calculate_part2(file)))
+    print("Dec 20, part 2: {}".format(calculate_part2(file)))
