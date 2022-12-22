@@ -6,7 +6,7 @@ class TestDec22(unittest.TestCase):
     file = "test.txt"
 
     def test_part1(self):
-        self.assertEqual(calculate_part1(self.file), 6032)
+        self.assertEqual(calculate_part1(self.file, 4), 6032)
 
     # def test_part2(self):
     #     self.assertEqual(calculate_part2(self.file), 0)
