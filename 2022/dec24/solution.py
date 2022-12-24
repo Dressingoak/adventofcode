@@ -52,8 +52,10 @@ class Blizzards:
                 explore = [(x+dx, y+dy) for dx in range(-1,2) for dy in range(-1,2) if abs(dx)+abs(dy) <= 1]
         explore = [(x, y) for (x, y) in explore if x in range(0, self.width) and y in range(0, self.height)]
         match state:
-            case (_, x, y) if (x, y) == self.start:
+            case (_, x, y) if (x, y) == self.start or (x, y) == self.end:
                 explore.append((x, y))
+            case (_, x, y) if (x, y+1) == self.start:
+                explore.append((x, y+1))
             case (_, x, y) if (x, y-1) == self.end:
                 explore.append((x, y-1))
         blizzards = self.get_blizzards(time)
@@ -64,32 +66,41 @@ class Blizzards:
                 continue
             yield next
 
-    def build_paths(self):
-        maximal_paths = sum(self.width * self.height - len(self.get_blizzards(t)) for t in range(0, self.period))
-        graph = {}
+    def build_paths(self, graph: dict, start: tuple[int, int, int]):
+        # maximal_paths = sum(self.width * self.height + 2 - len(self.get_blizzards(t)) for t in range(0, self.period))
         explore = set()
-        match self.start:
-            case (x, y): explore.add((0, x, y))
+        match start:
+            case (t, x, y): explore.add((t, x, y))
         while len(explore) > 0:
             additional = set()
             for state in explore:
                 additional.update(_ for _ in self.find_next_paths(graph, state))
             explore = additional
-            # print(f"...{len(graph)} / {maximal_paths}")
+            # print(f"... {int(len(graph) / maximal_paths * 10000) / 100}% done ({len(graph)} / {maximal_paths})")
         return graph
 
-def calculate_part1(file: str):
-    blizzards = Blizzards.parse(file)
-    match blizzards.start:
-        case (x, y):
-            graph = blizzards.build_paths()
-            _, costs = dijkstra(graph, (0, x, y), None)
-    return min(c for (_, x, y), c in costs.items() if (x, y) == blizzards.end) - 1
+    def navigate(self, graph, time, start, end):
+        match start:
+            case (x, y):
+                self.build_paths(graph, (time, x, y))
+                _, costs = dijkstra(graph, (time, x, y), None)
+        return min(((t, c) for (t, x, y), c in costs.items() if (x, y) == end), key=lambda z: z[1])
 
-# def calculate_part2(file: str):
-#     with open(file, "r") as f:
-#         pass
-#     return 0
+def calculate_part1(file: str, graph={}):
+    blizzards = Blizzards.parse(file)
+    _, c = blizzards.navigate(graph, 0, blizzards.start, blizzards.end)
+    # print(f"    Navigated to the end ({c-1} minutes)")
+    return c - 1
+
+def calculate_part2(file: str, graph={}):
+    blizzards = Blizzards.parse(file)
+    t1, c1 = blizzards.navigate(graph, 0, blizzards.start, blizzards.end)
+    # print(f"    Navigated to the end ({c1-1} minutes)")
+    t2, c2 = blizzards.navigate(graph, t1, blizzards.end, blizzards.start)
+    # print(f"    Navigated to the end ({c2} minutes)")
+    _, c3 = blizzards.navigate(graph, t2, blizzards.start, blizzards.end)
+    # print(f"    Navigated to the end ({c3} minutes)")
+    return (c1-1)+c2+c3
     
 if __name__ == '__main__':
     try:
@@ -97,5 +108,6 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 24, part 1: {}".format(calculate_part1(file)))
-    # print("Dec 24, part 2: {}".format(calculate_part2(file)))
+    graph = {}
+    print("Dec 24, part 1: {}".format(calculate_part1(file, graph)))
+    print("Dec 24, part 2: {}".format(calculate_part2(file, graph)))
