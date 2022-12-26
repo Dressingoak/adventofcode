@@ -27,16 +27,16 @@ class RobotFactory:
         return RobotFactory(id, blueprint)
 
     def can_proceed(self, check: str, robots: dict[str, int], allow: dict[str, int]):
-        if robots[check] > 0:
+        if check in robots and robots[check] > 0:
             return True
         else:
             return all(self.can_proceed(robot, robots, allow) and allow[check] for robot in self.blueprint[check].keys())
 
-    def get_next_states(self, state: tuple[int, int, int, int, int, int, int, int, int, bool, bool, bool, bool]):
+    def get_next_states(self, state: tuple[int, int, int, int, int, int, int, bool, bool, bool, bool]):
         match state:
-            case (time_remaining, ore, clay, obsidian, geode, n_ore, n_clay, n_obsidian, n_geode, a_ore, a_clay, a_obsidian, a_geode) if time_remaining > 0:
-                robots = {"ore": ore, "clay": clay, "obsidian": obsidian, "geode": geode}
-                resources = {"ore": n_ore, "clay": n_clay, "obsidian": n_obsidian, "geode": n_geode}
+            case (time_remaining, ore, clay, obsidian, n_ore, n_clay, n_obsidian, a_ore, a_clay, a_obsidian, a_geode) if time_remaining > 0:
+                robots = {"ore": ore, "clay": clay, "obsidian": obsidian}
+                resources = {"ore": n_ore, "clay": n_clay, "obsidian": n_obsidian}
                 allow = {"ore": a_ore, "clay": a_clay, "obsidian": a_obsidian, "geode": a_geode}
                 if self.can_proceed("geode", robots, allow):
                     can_build = []
@@ -54,16 +54,17 @@ class RobotFactory:
                             next_allow = {r: False if r in can_build else a for r, a in allow.items()}
                         else:
                             next_allow = {r: True for r in allow.keys()}
-                            next_robots[robot] += 1
+                            if robot in next_robots:
+                                next_robots[robot] += 1
                             for material, amount in self.blueprint[robot].items():
                                 next_resources[material] -= amount
                         next_state = (
                             time_remaining - 1, 
-                            next_robots["ore"], next_robots["clay"], next_robots["obsidian"], next_robots["geode"],
-                            next_resources["ore"], next_resources["clay"], next_resources["obsidian"], next_resources["geode"],
+                            next_robots["ore"], next_robots["clay"], next_robots["obsidian"],
+                            next_resources["ore"], next_resources["clay"], next_resources["obsidian"],
                             next_allow["ore"], next_allow["clay"], next_allow["obsidian"], next_allow["geode"]
                         )
-                        yield next_state, robots["geode"]
+                        yield next_state, 0 if robot != "geode" else (time_remaining - 1)
         
     def build_states(self, graph, state):
         paths, explore = {}, []
@@ -83,7 +84,7 @@ def calculate_part1(file: str):
     with open(file, "r") as f:
         for line in f.readlines():
             factory = RobotFactory.parse(line.rstrip())
-            start = (20, 1, 0, 0, 0, 0, 0, 0, 0, True, True, True, True)
+            start = (24, 1, 0, 0, 0, 0, 0, True, True, True, True)
             graph = {}
             factory.build_states(graph, start)
             _, states = dijkstra(graph, start, None)
@@ -99,7 +100,7 @@ def calculate_part2(file: str):
             factory = RobotFactory.parse(line.rstrip())
             if factory.id > 3:
                 pass
-            start = (20, 1, 0, 0, 0, 0, 0, 0, 0, True, True, True, True)
+            start = (32, 1, 0, 0, 0, 0, 0, True, True, True, True)
             graph = {}
             factory.build_states(graph, start)
             _, states = dijkstra(graph, start, None)
