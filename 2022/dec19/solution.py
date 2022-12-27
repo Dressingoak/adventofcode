@@ -1,7 +1,10 @@
 import sys
 import re
 sys.path.append('../')
-from path_finding import dijkstra
+from path_finding import a_star
+
+def ceildiv(a, b):
+    return -(a // -b)
 
 class RobotFactory:
     pattern_id = re.compile(r"Blueprint (\d+)")
@@ -10,6 +13,7 @@ class RobotFactory:
     def __init__(self, id: int, blueprint: dict[str, dict[str, int]]):
         self.id = id
         self.blueprint = blueprint
+        self.limits = {material: max((requirements[material] for requirements in self.blueprint.values() if material in requirements), default=0) for material in ["ore", "clay", "obsidian"]}
 
     def __repr__(self) -> str:
         return f"Blueprint {self.id}: {self.blueprint}"
@@ -26,88 +30,73 @@ class RobotFactory:
                     blueprint[robot_type] = {resource1: int(count1), resource2: int(count2)}
         return RobotFactory(id, blueprint)
 
-    def can_proceed(self, check: str, robots: dict[str, int], allow: dict[str, int]):
-        if check in robots and robots[check] > 0:
-            return True
-        else:
-            return all(self.can_proceed(robot, robots, allow) and allow[check] for robot in self.blueprint[check].keys())
-
-    def get_next_states(self, state: tuple[int, int, int, int, int, int, int, bool, bool, bool, bool]):
+    def get_next_states(self, state: tuple[int, int, int, int, int, int, int]):
         match state:
-            case (time_remaining, ore, clay, obsidian, n_ore, n_clay, n_obsidian, a_ore, a_clay, a_obsidian, a_geode) if time_remaining > 0:
-                robots = {"ore": ore, "clay": clay, "obsidian": obsidian}
-                resources = {"ore": n_ore, "clay": n_clay, "obsidian": n_obsidian}
-                allow = {"ore": a_ore, "clay": a_clay, "obsidian": a_obsidian, "geode": a_geode}
-                if self.can_proceed("geode", robots, allow):
-                    can_build = []
-                    if time_remaining > 1: # Check what robots can be built
-                        for robot, requirements in self.blueprint.items():
-                            if min(resources[material] // amount for material, amount in requirements.items()) > 0 and allow[robot]:
-                                can_build.append(robot)
-                    for robot, amount in robots.items(): # Increase resources from current robots
-                        resources[robot] += amount
-                    for robot in can_build + [None, ]:
-                        next_robots = {r: a for r, a in robots.items()}
-                        next_resources = {r: a for r, a in resources.items()}
-
-                        if robot is None:
-                            next_allow = {r: False if r in can_build else a for r, a in allow.items()}
-                        else:
-                            next_allow = {r: True for r in allow.keys()}
-                            if robot in next_robots:
-                                next_robots[robot] += 1
-                            for material, amount in self.blueprint[robot].items():
-                                next_resources[material] -= amount
+            case (time_remaining, bots_ore, bots_clay, bots_obsidian, amount_ore, amount_clay, amount_obsidian) if time_remaining > 1:
+                rates = {"ore": bots_ore, "clay": bots_clay, "obsidian": bots_obsidian}
+                resources = {"ore": amount_ore, "clay": amount_clay, "obsidian": amount_obsidian}
+                for robot, requirements in self.blueprint.items():
+                    if robot in self.limits and rates[robot] >= self.limits[robot]:
+                        continue
+                    if any(rates[material] == 0 for material, amount in requirements.items() if amount > 0): # Materials needed are not produced
+                        continue
+                    required_time = 0
+                    next_resources = {r: a for r, a in resources.items()}
+                    for material, amount in requirements.items():
+                        needed = amount - resources[material]
+                        time = ceildiv(needed, rates[material]) if needed > 0 else 0 # Solves for time: time * rate >= resources needed
+                        required_time = max(required_time, time)
+                        next_resources[material] -= amount
+                    if time_remaining - required_time - 1 > 0:
+                        next_rates = {r: a + (1 if r == robot else 0) for r, a in rates.items()}
+                        for r in resources.keys():
+                            next_resources[r] += (required_time + 1) * rates[r]
                         next_state = (
-                            time_remaining - 1, 
-                            next_robots["ore"], next_robots["clay"], next_robots["obsidian"],
-                            next_resources["ore"], next_resources["clay"], next_resources["obsidian"],
-                            next_allow["ore"], next_allow["clay"], next_allow["obsidian"], next_allow["geode"]
+                            time_remaining - required_time - 1, 
+                            next_rates["ore"], next_rates["clay"], next_rates["obsidian"],
+                            next_resources["ore"], next_resources["clay"], next_resources["obsidian"]
                         )
-                        yield next_state, 0 if robot != "geode" else (time_remaining - 1)
-        
-    def build_states(self, graph, state):
-        paths, explore = {}, []
-        for next, geodes in self.get_next_states(state):
-            paths[next] = -geodes
-            if next in graph:
-                continue
-            else:
-                explore.append(next)
-        graph[state] = paths
-        for next in explore:
-            self.build_states(graph, next)
-        return True
+                        yield next_state, 0 if robot != "geode" else (time_remaining - required_time - 1)
+    
+    def gen_states(self, state: tuple[int, int, int, int, int, int, int]):
+        following = [_ for _ in self.get_next_states(state)]
+        if len(following) == 0:
+            yield (0, 0, 0, 0, 0, 0, 0), 0
+        else:
+            for (next, cost) in following:
+                yield next, -cost
+
+
+    def estimate(self, state: tuple[int, int, int, int, int, int, int]):
+        time_remaining = state[0]
+        return - time_remaining * (time_remaining - 1) // 2
+
+    def get_maximal_geodes(self, time):
+        start = (time, 1, 0, 0, 0, 0, 0)
+        end = (0, 0, 0, 0, 0, 0, 0)
+        return a_star(self.gen_states, start, end, self.estimate)
 
 def calculate_part1(file: str):
     quality_level_sum = 0
     with open(file, "r") as f:
         for line in f.readlines():
             factory = RobotFactory.parse(line.rstrip())
-            start = (24, 1, 0, 0, 0, 0, 0, True, True, True, True)
-            graph = {}
-            factory.build_states(graph, start)
-            _, states = dijkstra(graph, start, None)
-            geodes = max(-value for value in states.values())
-            print(f"[Finished simulation for blueprint {factory.id} ({geodes} geodes, {len(graph)} states simulated)]")
-            quality_level_sum += factory.id * max(-value for value in states.values())
+            geodes = -factory.get_maximal_geodes(24)
+            print(f"[Finished simulating for blueprint {factory.id} ({geodes} geodes)]")
+            quality_level_sum += factory.id * geodes
     return quality_level_sum
 
 def calculate_part2(file: str):
-    geodes = 1
+    geodes_prod = 1
     with open(file, "r") as f:
         for line in f.readlines():
             factory = RobotFactory.parse(line.rstrip())
             if factory.id > 3:
-                pass
-            start = (32, 1, 0, 0, 0, 0, 0, True, True, True, True)
-            graph = {}
-            factory.build_states(graph, start)
-            _, states = dijkstra(graph, start, None)
-            geodes = max(-value for value in states.values())
-            print(f"[Finished simulation for blueprint {factory.id} ({geodes} geodes, {len(graph)} states simulated)]")
-            geodes *= max(-value for value in states.values())
-    return geodes
+                continue
+            geodes = -factory.get_maximal_geodes(32)
+            print(f"[Finished simulating for blueprint {factory.id} ({geodes} geodes)]")
+            geodes_prod *= geodes
+    return geodes_prod
 
 if __name__ == '__main__':
     try:
