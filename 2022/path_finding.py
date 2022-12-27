@@ -1,16 +1,18 @@
-from typing import TypeVar
+from typing import TypeVar, Generator, Callable
 
 T = TypeVar("T")
+K = TypeVar("K"),
+V = TypeVar("V")
 
 class MinPriorityQueue:
     def __init__(self) -> None:
-        self.keys = dict()
-        self.data = []
+        self.keys: dict[K, int] = dict()
+        self.data: list[tuple[K, V]] = []
 
     def __len__(self):
         return len(self.data)
 
-    def swap(self, i, j):
+    def swap(self, i: K, j: K):
         self.keys[self.data[i][0]], self.keys[self.data[j][0]] = j, i
         self.data[i], self.data[j] = self.data[j], self.data[i]
 
@@ -32,7 +34,7 @@ class MinPriorityQueue:
                 self.swap(i, j)
                 self.sift_down(j)
     
-    def insert(self, key, value):
+    def insert(self, key: K, value: V) -> None:
         if key in self.keys:
             i = self.keys[key]
             self.data[i] = (key, value)
@@ -42,7 +44,7 @@ class MinPriorityQueue:
             self.keys[key] = i
         self.sift_up(i)
 
-    def pop(self):
+    def pop(self) -> tuple[K, V] | None:
         if len(self.data) > 0:
             self.swap(0, len(self.data) - 1)
             key, value = self.data.pop()
@@ -73,3 +75,18 @@ def dijkstra(g: dict[T, dict[T, int]], s: T, t: T) -> tuple[int, dict[T, int]]:
                 dist[v] = alt
                 Q.insert(v, alt)
     return (None, dist)
+
+def a_star(gen: Callable[[T], Generator[tuple[T, int], None, None]], s: T, e: T, h: Callable[[T], int]):
+    open_set = MinPriorityQueue()
+    open_set.insert(s, 0)
+    cost_until = { s: 0 }
+    while len(open_set) > 0:
+        current, _ = open_set.pop()
+        if current == e:
+            break
+        for neighbor, cost in gen(current):
+            neighbor_cost = cost_until[current] + cost
+            if neighbor not in cost_until or neighbor_cost < cost_until[neighbor]:
+                cost_until[neighbor] = neighbor_cost
+                open_set.insert(neighbor, neighbor_cost + h(neighbor))
+    return cost_until[e]
