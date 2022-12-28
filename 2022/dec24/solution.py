@@ -1,5 +1,6 @@
 import sys
 sys.path.append('../')
+from timing import print_timing
 from path_finding import a_star
 
 def gcd(a: int, b: int) -> int:
@@ -71,11 +72,13 @@ class Blizzards:
                 h = lambda s: abs(ex - s[1]) + abs(ey - s[2])
                 return a_star(self.get_next_states, s, e, h)
 
+@print_timing
 def calculate_part1(file: str):
     blizzards = Blizzards.parse(file)
     _, c = blizzards.navigate(0, blizzards.start, blizzards.end)
     return c - 1
 
+@print_timing
 def calculate_part2(file: str):
     blizzards = Blizzards.parse(file)
     (t1, _, _), c1 = blizzards.navigate(0, blizzards.start, blizzards.end)
@@ -89,5 +92,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 24, part 1: {}".format(calculate_part1(file)))
-    print("Dec 24, part 2: {}".format(calculate_part2(file)))
+    print("Dec 24, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 24, part 2: {} (took {})".format(*calculate_part2(file)))
