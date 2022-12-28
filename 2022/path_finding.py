@@ -93,4 +93,4 @@ def a_star(gen: Callable[[T], Generator[tuple[T, int], None, None]], s: T, e: T 
             if neighbor not in cost_until or neighbor_cost < cost_until[neighbor]:
                 cost_until[neighbor] = neighbor_cost
                 open_set.insert(neighbor, neighbor_cost + h(neighbor))
-    return current, cost_until[current]
+    return cost_until[current]
