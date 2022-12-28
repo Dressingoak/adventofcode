@@ -69,12 +69,13 @@ class RobotFactory:
 
     def estimate(self, state: tuple[int, int, int, int, int, int, int]):
         time_remaining = state[0]
-        return - time_remaining * (time_remaining - 1) // 2
+        return - time_remaining * (time_remaining - 1) // 2 # sum(-i, i=1..time_remaining)
 
     def get_maximal_geodes(self, time):
         start = (time, 1, 0, 0, 0, 0, 0)
         end = (0, 0, 0, 0, 0, 0, 0)
-        return a_star(self.gen_states, start, end, self.estimate)
+        _, cost = a_star(self.gen_states, start, end, self.estimate)
+        return cost
 
 def calculate_part1(file: str):
     quality_level_sum = 0

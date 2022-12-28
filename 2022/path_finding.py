@@ -76,17 +76,21 @@ def dijkstra(g: dict[T, dict[T, int]], s: T, t: T) -> tuple[int, dict[T, int]]:
                 Q.insert(v, alt)
     return (None, dist)
 
-def a_star(gen: Callable[[T], Generator[tuple[T, int], None, None]], s: T, e: T, h: Callable[[T], int]):
+def a_star(gen: Callable[[T], Generator[tuple[T, int], None, None]], s: T, e: T | Callable[[T], bool], h: Callable[[T], int]) -> tuple[T, int]:
     open_set = MinPriorityQueue()
     open_set.insert(s, 0)
     cost_until = { s: 0 }
+    if callable(e):
+        end_test = e
+    else:
+        end_test = lambda v: v == e
     while len(open_set) > 0:
         current, _ = open_set.pop()
-        if current == e:
+        if end_test(current):
             break
         for neighbor, cost in gen(current):
             neighbor_cost = cost_until[current] + cost
             if neighbor not in cost_until or neighbor_cost < cost_until[neighbor]:
                 cost_until[neighbor] = neighbor_cost
                 open_set.insert(neighbor, neighbor_cost + h(neighbor))
-    return cost_until[e]
+    return current, cost_until[current]
