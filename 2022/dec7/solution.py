@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 
 def find(dir, path: list[str]):
     match path:
@@ -37,10 +39,12 @@ def get_all_dir_sizes(file: str):
     dir_size({"/": files}, contents)
     return contents
 
+@print_timing
 def calculate_part1(file: str):
     contents = get_all_dir_sizes(file)
     return sum(s for s in contents.values() if s <= 100000)
 
+@print_timing
 def calculate_part2(file: str):
     contents = get_all_dir_sizes(file)
     needed = 30000000 - (70000000 - contents["/"])
@@ -52,5 +56,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 7, part 1: {}".format(calculate_part1(file)))
-    print("Dec 7, part 2: {}".format(calculate_part2(file)))
+    print("Dec 7, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 7, part 2: {} (took {})".format(*calculate_part2(file)))

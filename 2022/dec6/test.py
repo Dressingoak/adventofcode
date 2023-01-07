@@ -18,7 +18,7 @@ class TestDec6(unittest.TestCase):
         self.assertEqual(first_n_distinct("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 4), 11)
 
     def test_part1(self):
-        self.assertEqual(calculate_part1(self.file), 7)
+        self.assertEqual(calculate_part1(self.file)[0], 7)
 
     def test_example1_14(self):
         self.assertEqual(first_n_distinct("bvwbjplbgvbhsrlpgdmjqwftvncz", 14), 23)
@@ -34,7 +34,7 @@ class TestDec6(unittest.TestCase):
 
 
     def test_part2(self):
-        self.assertEqual(calculate_part2(self.file), 19)
+        self.assertEqual(calculate_part2(self.file)[0], 19)
 
 if __name__ == '__main__':
     unittest.main()

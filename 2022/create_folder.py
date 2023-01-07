@@ -13,12 +13,16 @@ if __name__ == '__main__':
 
     f = open(f"{folder}/solution.py", "a")
     f.write(f"""import sys
+sys.path.append('../')
+from timing import print_timing
 
+@print_timing
 def calculate_part1(file: str):
     with open(file, "r") as f:
         pass
     return 0
 
+# @print_timing
 # def calculate_part2(file: str):
 #     with open(file, "r") as f:
 #         pass
@@ -30,8 +34,8 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec {day}, part 1: {{}}".format(calculate_part1(file)))
-    # print("Dec {day}, part 2: {{}}".format(calculate_part2(file)))
+    print("Dec {day}, part 1: {{}} (took {{}})".format(*calculate_part1(file)))
+    # print("Dec {day}, part 2: {{}} (took {{}})".format(*calculate_part2(file)))
 """)
     f.close()
 
@@ -44,10 +48,10 @@ class TestDec{day}(unittest.TestCase):
     file = "test.txt"
 
     def test_part1(self):
-        self.assertEqual(calculate_part1(self.file), 0)
+        self.assertEqual(calculate_part1(self.file)[0], 0)
 
     # def test_part2(self):
-    #     self.assertEqual(calculate_part2(self.file), 0)
+    #     self.assertEqual(calculate_part2(self.file)[0], 0)
 
 if __name__ == '__main__':
     unittest.main()

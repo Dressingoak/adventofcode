@@ -7,10 +7,10 @@ class TestDec17(unittest.TestCase):
     file = "test.txt"
 
     def test_part1(self):
-        self.assertEqual(calculate_part1(self.file, self.shape_file), 3068)
+        self.assertEqual(calculate_part1(self.file, self.shape_file)[0], 3068)
 
     def test_part2(self):
-        self.assertEqual(calculate_part2(self.file, self.shape_file), 1_514_285_714_288)
+        self.assertEqual(calculate_part2(self.file, self.shape_file)[0], 1_514_285_714_288)
 
 if __name__ == '__main__':
     unittest.main()

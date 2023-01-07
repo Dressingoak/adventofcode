@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 import re
 
 def parse(file: str):
@@ -33,6 +35,7 @@ def parse(file: str):
             lst.reverse()
     return crates, instructions
 
+@print_timing
 def calculate_part1(file: str):
     crates, instructions = parse(file)
     for (stacks, src, dst) in instructions:
@@ -43,6 +46,7 @@ def calculate_part1(file: str):
     indices.sort()
     return "".join(crates[i].pop() for i in indices)
 
+@print_timing
 def calculate_part2(file: str):
     crates, instructions = parse(file)
     for (stacks, src, dst) in instructions:
@@ -59,5 +63,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 5, part 1: {}".format(calculate_part1(file)))
-    print("Dec 5, part 2: {}".format(calculate_part2(file)))
+    print("Dec 5, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 5, part 2: {} (took {})".format(*calculate_part2(file)))

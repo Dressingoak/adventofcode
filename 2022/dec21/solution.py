@@ -1,5 +1,7 @@
 import sys
 import re
+sys.path.append('../')
+from timing import print_timing
 
 def gcd(a, b):
     while b:
@@ -16,6 +18,11 @@ class Fraction:
 
     def zero():
         return Fraction(0, 1)
+
+    def __int__(self) -> int:
+        if self.d != 1:
+            raise RuntimeError(f"Error casting {self} to int, denominator is not zero!")
+        return self.n
 
     def __neg__(self):
         return Fraction(-self.n, self.d)
@@ -153,16 +160,18 @@ def lookup_poly(key: str, monkeys: dict[str, int | tuple[str, str, str]], indent
         case (_, (lhs, rhs, op)) if op == "/": return lookup_poly(lhs, monkeys, indent + 2) / lookup_poly(rhs, monkeys, indent + 2)
         case _: raise Exception("Unhandled")
 
+@print_timing
 def calculate_part1(file: str):
     monkeys = parse(file)
     return lookup("root", monkeys)
 
+@print_timing
 def calculate_part2(file: str):
     monkeys = parse(file)
     equation = lookup_poly("root", monkeys)
     match equation.coef:
         case [b, a]: # Linear equation a * x + b = 0
-            return -b / a
+            return int(-b / a)
         case coef:
             raise Exception(f"Unhandled, cannot solve equation og degree {len(coef) - 1}")
     
@@ -172,5 +181,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 21, part 1: {}".format(calculate_part1(file)))
-    print("Dec 21, part 2: {}".format(calculate_part2(file)))
+    print("Dec 21, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 21, part 2: {} (took {})".format(*calculate_part2(file)))

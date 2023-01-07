@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 
 def snafu_to_decimal(x):
     lst = []
@@ -23,6 +25,7 @@ def gen_decimal_to_snafu(x):
 def decimal_to_snafu(x):
     return "".join(reversed([_ for _ in gen_decimal_to_snafu(x)]))
 
+@print_timing
 def calculate_part1(file: str):
 
     s = 0
@@ -37,4 +40,4 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 25, part 1: {}".format(calculate_part1(file)))
+    print("Dec 25, part 1: {} (took {})".format(*calculate_part1(file)))

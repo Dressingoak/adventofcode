@@ -1,5 +1,8 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 
+@print_timing
 def calculate_part1(file: str):
     cur, max = 0, 0
     with open(file, "r") as f:
@@ -15,6 +18,7 @@ def calculate_part1(file: str):
             max = cur
     return max
 
+@print_timing
 def calculate_part2(file: str):
     cur, l = 0, []
     with open(file, "r") as f:
@@ -37,5 +41,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 1, part 1: {}".format(calculate_part1(file)))
-    print("Dec 1, part 2: {}".format(calculate_part2(file)))
+    print("Dec 1, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 1, part 2: {} (took {})".format(*calculate_part2(file)))

@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 import re
 
 class Monkey:
@@ -52,6 +54,7 @@ def parse(file: str, mod=False):
         raise Exception(f"Didn't parse entire input, expected {expected} blocks, got {len(monkeys)}.")
     return monkeys
 
+@print_timing
 def calculate_part1(file: str):
     monkeys = parse(file)
     for _ in range(20):
@@ -62,6 +65,7 @@ def calculate_part1(file: str):
     match inspections:
         case [a, b, *_]: return a * b
 
+@print_timing
 def calculate_part2(file: str):
     monkeys = parse(file)
     ops, mods, maps, inits, inspections = {}, {}, {}, [], {}
@@ -94,5 +98,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 11, part 1: {}".format(calculate_part1(file)))
-    print("Dec 11, part 2: {}".format(calculate_part2(file)))
+    print("Dec 11, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 11, part 2: {} (took {})".format(*calculate_part2(file)))

@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 
 def cpu(file: str):
     cycle = 0
@@ -14,9 +16,11 @@ def cpu(file: str):
                     yield (cycle, X)
                     X += int(v)
 
+@print_timing
 def calculate_part1(file: str):
     return sum(cycle * X for cycle, X in cpu(file) if cycle % 40 - 20 == 0)
 
+@print_timing
 def calculate_part2(file: str):
     s = ""
     for cycle, X in cpu(file):
@@ -32,5 +36,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 10, part 1: {}".format(calculate_part1(file)))
-    print("Dec 10, part 2: {}".format(calculate_part2(file)))
+    print("Dec 10, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 10, part 2: {} (took {})".format(*calculate_part2(file)))

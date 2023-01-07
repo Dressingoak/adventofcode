@@ -6,10 +6,10 @@ class TestDec8(unittest.TestCase):
     file = "test.txt"
 
     def test_part1(self):
-        self.assertEqual(calculate_part1(self.file), 21)
+        self.assertEqual(calculate_part1(self.file)[0], 21)
 
     def test_part2(self):
-        self.assertEqual(calculate_part2(self.file), 8)
+        self.assertEqual(calculate_part2(self.file)[0], 8)
 
 if __name__ == '__main__':
     unittest.main()

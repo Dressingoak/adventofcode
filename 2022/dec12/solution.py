@@ -1,5 +1,6 @@
 import sys
 sys.path.append('../')
+from timing import print_timing
 from path_finding import dijkstra
 
 def parse(file: str):
@@ -37,11 +38,13 @@ def parse(file: str):
 
     return hmap, graph, rows, cols, start, end
 
+@print_timing
 def calculate_part1(file: str):
     _, graph, _, _, start, end = parse(file)
     shortest, _ = dijkstra(graph, start, end)
     return shortest
 
+@print_timing
 def calculate_part2(file: str):
     hmap, graph, rows, cols, _, end = parse(file)
     starting_points = []
@@ -57,5 +60,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 12, part 1: {}".format(calculate_part1(file)))
-    print("Dec 12, part 2: {}".format(calculate_part2(file)))
+    print("Dec 12, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 12, part 2: {} (took {})".format(*calculate_part2(file)))

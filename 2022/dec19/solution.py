@@ -1,6 +1,7 @@
 import sys
 import re
 sys.path.append('../')
+from timing import print_timing
 from path_finding import a_star
 
 def ceildiv(a, b):
@@ -77,16 +78,17 @@ class RobotFactory:
         _, cost = a_star(self.gen_states, start, end, self.estimate)
         return cost
 
+@print_timing
 def calculate_part1(file: str):
     quality_level_sum = 0
     with open(file, "r") as f:
         for line in f.readlines():
             factory = RobotFactory.parse(line.rstrip())
             geodes = -factory.get_maximal_geodes(24)
-            print(f"[Finished simulating for blueprint {factory.id} ({geodes} geodes)]")
             quality_level_sum += factory.id * geodes
     return quality_level_sum
 
+@print_timing
 def calculate_part2(file: str):
     geodes_prod = 1
     with open(file, "r") as f:
@@ -95,7 +97,6 @@ def calculate_part2(file: str):
             if factory.id > 3:
                 continue
             geodes = -factory.get_maximal_geodes(32)
-            print(f"[Finished simulating for blueprint {factory.id} ({geodes} geodes)]")
             geodes_prod *= geodes
     return geodes_prod
 
@@ -105,5 +106,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 19, part 1: {}".format(calculate_part1(file)))
-    print("Dec 19, part 2: {}".format(calculate_part2(file)))
+    print("Dec 19, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 19, part 2: {} (took {})".format(*calculate_part2(file)))

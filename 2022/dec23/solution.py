@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 
 def elves(file: str, stop=None):
     elves: set[tuple[int, int]] = set()
@@ -53,10 +55,12 @@ def elves(file: str, stop=None):
         ymin, ymax = min(ymin, y), max(ymax, y)
     return round, (xmax - xmin + 1) * (ymax - ymin + 1) - len(elves) - 1
 
+@print_timing
 def calculate_part1(file: str):
     _, free = elves(file, 10)
     return free
 
+@print_timing
 def calculate_part2(file: str):
     rounds, _ = elves(file, None)
     return rounds
@@ -67,5 +71,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 23, part 1: {}".format(calculate_part1(file)))
-    print("Dec 23, part 2: {}".format(calculate_part2(file)))
+    print("Dec 23, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 23, part 2: {} (took {})".format(*calculate_part2(file)))

@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 import re
 
 def parse(file: str):
@@ -42,6 +44,7 @@ class Interval:
         else:
             raise NotImplementedError()
 
+@print_timing
 def calculate_part1(file: str, row):
     occupied, beacons = set(), set()
     for sx, sy, bx, by in parse(file):
@@ -71,6 +74,7 @@ def search(file: str, size: int):
             case [interval] if interval.l == interval.r: return (row, interval.l)
             case _: raise Exception("Unhandled")
 
+@print_timing
 def calculate_part2(file: str, size: int):
     (y, x) = search(file, size)
     return 4_000_000 * x + y
@@ -81,5 +85,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 15, part 1: {}".format(calculate_part1(file, 2_000_000)))
-    print("Dec 15, part 2: {}".format(calculate_part2(file, 4_000_000)))
+    print("Dec 15, part 1: {} (took {})".format(*calculate_part1(file, 2_000_000)))
+    print("Dec 15, part 2: {} (took {})".format(*calculate_part2(file, 4_000_000)))

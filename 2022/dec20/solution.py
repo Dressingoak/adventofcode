@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 from typing import TypeVar
 
 T = TypeVar("T")
@@ -74,6 +76,7 @@ def extract(numbers: DoubleLinkedList):
         s += cur[1]
     return s
 
+@print_timing
 def calculate_part1(file: str):
     original = []
     with open(file, "r") as f:
@@ -85,6 +88,7 @@ def calculate_part1(file: str):
         numbers.move(x, x[1])
     return extract(numbers)
 
+@print_timing
 def calculate_part2(file: str):
     original = []
     with open(file, "r") as f:
@@ -103,5 +107,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 20, part 1: {}".format(calculate_part1(file)))
-    print("Dec 20, part 2: {}".format(calculate_part2(file)))
+    print("Dec 20, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 20, part 2: {} (took {})".format(*calculate_part2(file)))

@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 
 def ceilhalf(x):
     return - (x // -2) if x > 0 else x // 2
@@ -10,6 +12,7 @@ def advance_tail(h, t):
         case (dx, dy) if max(abs(dx), abs(dy)) < 2: return t
         case (dx, dy) if max(abs(dx), abs(dy)) < 3: return (t[0] + ceilhalf(dx), t[1] + ceilhalf(dy))
 
+@print_timing
 def calculate(file: str, n: int):
     positions = set()
     rope = [(0, 0), ] * n
@@ -34,5 +37,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 9, part 1: {}".format(calculate(file, 2)))
-    print("Dec 9, part 2: {}".format(calculate(file, 10)))
+    print("Dec 9, part 1: {} (took {})".format(*calculate(file, 2)))
+    print("Dec 9, part 2: {} (took {})".format(*calculate(file, 10)))

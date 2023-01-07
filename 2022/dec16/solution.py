@@ -1,6 +1,7 @@
 import sys
 import re
 sys.path.append('../')
+from timing import print_timing
 from path_finding import dijkstra
 
 def parse(file: str):
@@ -45,6 +46,7 @@ def build_connections(current_valve: str, visited_valves: set[str], time_remaini
         for next_valve, next_visited_valves, next_time_remaining in next:
             build_connections(next_valve, next_visited_valves, next_time_remaining, restrict_connections(connection_costs, next_valve, next_valves.keys()), graph)
 
+@print_timing
 def calculate_part1(file: str):
     start_valve = "AA"
     connection_costs = get_connection_costs(file, start_valve)
@@ -54,6 +56,7 @@ def calculate_part1(file: str):
     maximal = -min(pressures.values())
     return maximal
 
+@print_timing
 def calculate_part2(file: str):
     start_valve = "AA"
     connection_costs = get_connection_costs(file, start_valve)
@@ -87,5 +90,5 @@ if __name__ == '__main__':
     except:
         file = "input.txt"
 
-    print("Dec 16, part 1: {}".format(calculate_part1(file)))
-    print("Dec 16, part 2: {}".format(calculate_part2(file)))
+    print("Dec 16, part 1: {} (took {})".format(*calculate_part1(file)))
+    print("Dec 16, part 2: {} (took {})".format(*calculate_part2(file)))

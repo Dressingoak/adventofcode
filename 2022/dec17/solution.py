@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../')
+from timing import print_timing
 
 def push_shape(shape: set[tuple[int, int]]) -> list[tuple[int, int]]:
     height = max(k for k, _ in shape) + 1
@@ -145,12 +147,14 @@ class Chamber:
             arr.append(s)
         return "\n".join(reversed(arr))
 
+@print_timing
 def calculate_part1(file: str, shape_file: str):
     chamber = Chamber(file, shape_file)
     for _ in range(2022):
         chamber.simulate()
     return chamber.get_height()
 
+@print_timing
 def calculate_part2(file: str, shape_file: str):
     rocks = 1_000_000_000_000
     chamber = Chamber(file, shape_file)
@@ -168,5 +172,5 @@ if __name__ == '__main__':
     except:
         shape_file = "shapes.txt"
 
-    print("Dec 17, part 1: {}".format(calculate_part1(file, shape_file)))
-    print("Dec 17, part 2: {}".format(calculate_part2(file, shape_file)))
+    print("Dec 17, part 1: {} (took {})".format(*calculate_part1(file, shape_file)))
+    print("Dec 17, part 2: {} (took {})".format(*calculate_part2(file, shape_file)))
