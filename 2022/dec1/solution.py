@@ -1,7 +1,11 @@
 import sys
+import click
 sys.path.append('../')
-from timing import print_timing
+from timing import print_timing, setup_cli
 
+@click.command()
+@click.option('--file', default="input.txt", help='File to process')
+@click.pass_obj
 @print_timing
 def calculate_part1(file: str):
     cur, max = 0, 0
@@ -18,6 +22,9 @@ def calculate_part1(file: str):
             max = cur
     return max
 
+@click.command()
+@click.option('--file', default="input.txt", help='File to process')
+@click.pass_obj
 @print_timing
 def calculate_part2(file: str):
     cur, l = 0, []
@@ -34,12 +41,7 @@ def calculate_part2(file: str):
     l.sort(reverse=True)
     return sum(l[:3])
 
-    
-if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
+cli = setup_cli(__file__, calculate_part1, calculate_part2)
 
-    print("Dec 1, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 1, part 2: {} (took {})".format(*calculate_part2(file)))
+if __name__ == '__main__':
+    cli()
