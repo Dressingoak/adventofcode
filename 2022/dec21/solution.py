@@ -1,7 +1,7 @@
 import sys
 import re
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def gcd(a, b):
     while b:
@@ -160,12 +160,10 @@ def lookup_poly(key: str, monkeys: dict[str, int | tuple[str, str, str]], indent
         case (_, (lhs, rhs, op)) if op == "/": return lookup_poly(lhs, monkeys, indent + 2) / lookup_poly(rhs, monkeys, indent + 2)
         case _: raise Exception("Unhandled")
 
-@print_timing
 def calculate_part1(file: str):
     monkeys = parse(file)
     return lookup("root", monkeys)
 
-@print_timing
 def calculate_part2(file: str):
     monkeys = parse(file)
     equation = lookup_poly("root", monkeys)
@@ -176,10 +174,10 @@ def calculate_part2(file: str):
             raise Exception(f"Unhandled, cannot solve equation og degree {len(coef) - 1}")
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 21, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 21, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

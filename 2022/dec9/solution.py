@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def ceilhalf(x):
     return - (x // -2) if x > 0 else x // 2
@@ -12,7 +12,6 @@ def advance_tail(h, t):
         case (dx, dy) if max(abs(dx), abs(dy)) < 2: return t
         case (dx, dy) if max(abs(dx), abs(dy)) < 3: return (t[0] + ceilhalf(dx), t[1] + ceilhalf(dy))
 
-@print_timing
 def calculate(file: str, n: int):
     positions = set()
     rope = [(0, 0), ] * n
@@ -31,11 +30,17 @@ def calculate(file: str, n: int):
                 positions.add(rope[-1])
     return len(positions)
 
-if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
+def calculate_part1(file: str):
+    return calculate(file, 2)
 
-    print("Dec 9, part 1: {} (took {})".format(*calculate(file, 2)))
-    print("Dec 9, part 2: {} (took {})".format(*calculate(file, 10)))
+def calculate_part2(file: str):
+    return calculate(file, 10)
+
+if __name__ == '__main__':
+
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

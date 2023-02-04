@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def elves(file: str, stop=None):
     elves: set[tuple[int, int]] = set()
@@ -55,21 +55,19 @@ def elves(file: str, stop=None):
         ymin, ymax = min(ymin, y), max(ymax, y)
     return round, (xmax - xmin + 1) * (ymax - ymin + 1) - len(elves) - 1
 
-@print_timing
 def calculate_part1(file: str):
     _, free = elves(file, 10)
     return free
 
-@print_timing
 def calculate_part2(file: str):
     rounds, _ = elves(file, None)
     return rounds
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 23, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 23, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

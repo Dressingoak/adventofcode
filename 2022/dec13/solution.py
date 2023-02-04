@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def parse_packet(packet: str) -> list:
     i, l = 1, []
@@ -80,12 +80,10 @@ def sorter(lst: list, gt) -> list:
         if is_sorted:
             break
 
-@print_timing
 def calculate_part1(file: str):
     packets = parse_packets(file)
     return sum(i+1 for i, (left, right) in enumerate(packets) if compare(left, right))
 
-@print_timing
 def calculate_part2(file: str):
     packets = parse_packets(file)
     decoders: set[list] = [[[2]], [[6]]]
@@ -101,10 +99,10 @@ def calculate_part2(file: str):
     return p
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 13, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 13, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

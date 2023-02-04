@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 from path_finding import dijkstra
 
 def evaluate(current: int, adjecent: int, reversed: bool):
@@ -44,23 +44,21 @@ def parse(file: str, is_reversed: bool = False):
 
     return hmap, graph, start, end
 
-@print_timing
 def calculate_part1(file: str):
     _, graph, start, end = parse(file)
     shortest, _ = dijkstra(graph, start, end)
     return shortest
 
-@print_timing
 def calculate_part2(file: str):
     hmap, graph, _, end = parse(file, is_reversed=True)
     _, dists = dijkstra(graph, end, None)
     return min(steps for (i, j), steps in dists.items() if hmap[i][j] == ord("a") and steps is not None)
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 12, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 12, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

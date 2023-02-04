@@ -106,6 +106,16 @@ class Puzzle(object):
                 else:
                     raise RuntimeError(f"""Function parameter '{name}' of function '{func.__name__}' carry different kwargs: {kwargs} (new) != {self.arguments[name]["kwargs"]} (existing).""")
 
+    def get_parameter_kwargs(self, name: str) -> dict:
+        return self.arguments[name]["kwargs"]
+
+    def set_parameter_help(self, name: str, help: str):
+        self.arguments[name]["kwargs"]["help"] = help
+
+    def set_parameter_type_bool(self, name: str):
+        self.arguments[name]["kwargs"]["action"] = "store_true"
+        
+
     def build_parser(self, use_defaults: bool = True):
         # Apply defaults to arguments
         if use_defaults:
@@ -122,16 +132,18 @@ class Puzzle(object):
                 properties["kwargs"]["help"] = f"applies to parts: {parts}"
 
         # Arguments that applies to the CLI itself
+        general_args = self.parser.add_argument_group('general', 'arguments applicable to the execution of the puzzle')
         parts = [part for part in sorted(_ for _ in self.callables.keys())]
-        self.parser.add_argument("-d", "--debug", action="store_true", help="add debug information", default=False)
-        self.parser.add_argument("-r", "--result-only", dest="result_only", action="store_true", help="only print the result", default=False)
-        self.parser.add_argument("-p", "--parts", nargs="+", choices=parts, help="parts to run", default=parts, type=int)
-        self.parser.add_argument("-b", "--benchmark", metavar="DURATION", help="repeat the method for at least DURATION seconds", default=0.0, type=float)
+        general_args.add_argument("-c", "--color", action=argparse.BooleanOptionalAction, help="add color to output information", default=True)
+        general_args.add_argument("-r", "--result-only", dest="result_only", action="store_true", help="only print the result", default=False)
+        general_args.add_argument("-p", "--parts", nargs="+", choices=parts, help="parts to run", default=parts, type=int)
+        general_args.add_argument("-b", "--benchmark", metavar="DURATION", help="repeat the method for at least DURATION seconds", default=0.0, type=float)
 
         # Arguments that applies to the individual parts
+        specific_args = self.parser.add_argument_group('specific', 'arguments applicable to the specific calculations')
         for param, properties in self.arguments.items():
             kwargs = properties["kwargs"]
-            self.parser.add_argument(f"--{param}", **kwargs)
+            specific_args.add_argument(f"--{param}", **kwargs)
 
     def run(self):
         self.build_parser()
@@ -145,19 +157,22 @@ class Puzzle(object):
                 print(result)
             else:
                 result, duration, sd, n = timeit(self.callables[part]["callable"], args.benchmark)(**parameters)
-                self.print_formatted_result(part, result, duration, sd, n)
+                self.print_formatted_result(args.color, part, result, duration, sd, n)
 
-    def print_formatted_result(self, part, result, duration, sd, n):
+    def print_formatted_result(self, colored: bool, part, result, duration, sd, n):
         def format_duration(duration):
             match duration:
                 case duration if duration * 1_000 < 1: return '{:.3f} μs'.format(duration*1_000_000)
                 case duration if duration < 1: return '{:.3f} ms'.format(duration*1_000)
                 case duration: return '{:.3f} s'.format(duration)
-        print(Colors.fg.yellow, f"Dec {self.day}, part {part}: ", sep="", end="")
-        print(Colors.reset, f"{result} ", sep="", end="")
+        fmt_pre = f"Dec {self.day}, part {part}: "
+        print(Colors.fg.yellow, fmt_pre, sep="", end="") if colored else print(fmt_pre, end="")
+        fmt_res = f"{result} "
+        print(Colors.reset, fmt_res, sep="", end="") if colored else print(fmt_res, end="")
         fd = format_duration(duration)
         if sd is not None:
             fsd = format_duration(sd)
-            print(Colors.fg.black, f"(took at best {fd}, {fsd} spread, {n} repeats)", Colors.reset, sep="")
+            fmt_time = f"(took at best {fd}, {fsd} spread, {n} repeats)"
         else:
-            print(Colors.fg.black, f"(took {fd})", Colors.reset, sep="")
+            fmt_time = f"(took {fd})"
+        print(Colors.fg.black, fmt_time, Colors.reset, sep="") if colored else print(fmt_time)

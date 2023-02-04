@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from base import Puzzle
+from puzzle import Puzzle
 
 def calculate_part1(file: str):
     cur, max = 0, 0

@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 from path_finding import dijkstra
 
 Cube = tuple[int, int, int]
@@ -18,7 +18,6 @@ def add_sides(cube: Cube, seen: set[Cube]) -> int:
             seen.add((x, y, z))
             return sides
 
-@print_timing
 def count_sides(file: str, with_interior: bool):
     sides = 0
     ds = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
@@ -53,11 +52,17 @@ def count_sides(file: str, with_interior: bool):
             sides += add_sides(cube, seen)
     return sides
 
-if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
+def calculate_part1(file: str):
+    return count_sides(file, True)
 
-    print("Dec 18, part 1: {} (took {})".format(*count_sides(file, True)))
-    print("Dec 18, part 2: {} (took {})".format(*count_sides(file, False)))
+def calculate_part2(file: str):
+    return count_sides(file, False)
+
+if __name__ == '__main__':
+
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()
