@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def parse_cave(file: str):
     cave = {}
@@ -84,7 +84,6 @@ def simulate_many(cave):
             case None: break
     return c
 
-@print_timing
 def calculate_part1(file: str, show=False):
     cave = parse_cave(file)
     c = simulate_many(cave)
@@ -92,7 +91,6 @@ def calculate_part1(file: str, show=False):
         print(show_cave(cave))
     return c
 
-@print_timing
 def calculate_part2(file: str, show=False):
     cave = parse_cave(file)
     add_floor(cave)
@@ -102,10 +100,12 @@ def calculate_part2(file: str, show=False):
     return c
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 14, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 14, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+    puzzle.set_parameter_type_bool("show")
+    puzzle.set_parameter_help("show", "display the sand dunes")
+
+    puzzle.run()

@@ -1,8 +1,7 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
-@print_timing
 def calculate_part1(file: str):
     cur, max = 0, 0
     with open(file, "r") as f:
@@ -18,7 +17,6 @@ def calculate_part1(file: str):
             max = cur
     return max
 
-@print_timing
 def calculate_part2(file: str):
     cur, l = 0, []
     with open(file, "r") as f:
@@ -34,12 +32,11 @@ def calculate_part2(file: str):
     l.sort(reverse=True)
     return sum(l[:3])
 
-    
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 1, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 1, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

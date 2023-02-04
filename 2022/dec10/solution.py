@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def cpu(file: str):
     cycle = 0
@@ -16,11 +16,9 @@ def cpu(file: str):
                     yield (cycle, X)
                     X += int(v)
 
-@print_timing
 def calculate_part1(file: str):
     return sum(cycle * X for cycle, X in cpu(file) if cycle % 40 - 20 == 0)
 
-@print_timing
 def calculate_part2(file: str):
     s = ""
     for cycle, X in cpu(file):
@@ -31,10 +29,10 @@ def calculate_part2(file: str):
     return s
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 10, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 10, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

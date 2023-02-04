@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def parse_forest(file: str):
     trees = []
@@ -10,7 +10,6 @@ def parse_forest(file: str):
     rows, cols = len(trees), len(trees[0])
     return trees, rows, cols
 
-@print_timing
 def calculate_part1(file: str):
     trees, rows, cols = parse_forest(file)
     visible = 2 * rows + 2 * cols - 4 # edge count
@@ -33,7 +32,6 @@ def directional_scenic_score(h: int, lst):
             return s + 1
     return s
 
-@print_timing
 def calculate_part2(file: str):
     trees, rows, cols = parse_forest(file)
     m = 0
@@ -49,10 +47,10 @@ def calculate_part2(file: str):
     return m
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 8, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 8, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

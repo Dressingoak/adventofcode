@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def priority(char: str) -> int:
     ascii = ord(char)
@@ -9,7 +9,6 @@ def priority(char: str) -> int:
     elif ascii >= 65 and ascii <= 90:
         return ascii - 38 # A..Z => 27..52
 
-@print_timing
 def calculate_part1(file: str):
     s = 0
     with open(file, "r") as f:
@@ -24,7 +23,6 @@ def calculate_part1(file: str):
                 case _: raise Exception("Not exactly one common item!")
     return s
 
-@print_timing
 def calculate_part2(file: str):
     s = 0
     with open(file, "r") as f:
@@ -38,10 +36,10 @@ def calculate_part2(file: str):
     return s
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 3, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 3, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()

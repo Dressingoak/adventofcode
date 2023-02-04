@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def snafu_to_decimal(x):
     lst = []
@@ -25,7 +25,6 @@ def gen_decimal_to_snafu(x):
 def decimal_to_snafu(x):
     return "".join(reversed([_ for _ in gen_decimal_to_snafu(x)]))
 
-@print_timing
 def calculate_part1(file: str):
 
     s = 0
@@ -35,9 +34,9 @@ def calculate_part1(file: str):
     return decimal_to_snafu(s)
 
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 25, part 1: {} (took {})".format(*calculate_part1(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+
+    puzzle.run()

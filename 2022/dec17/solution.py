@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def push_shape(shape: set[tuple[int, int]]) -> list[tuple[int, int]]:
     height = max(k for k, _ in shape) + 1
@@ -147,15 +147,13 @@ class Chamber:
             arr.append(s)
         return "\n".join(reversed(arr))
 
-@print_timing
-def calculate_part1(file: str, shape_file: str):
+def calculate_part1(file: str, shape_file: str = "shapes.txt"):
     chamber = Chamber(file, shape_file)
     for _ in range(2022):
         chamber.simulate()
     return chamber.get_height()
 
-@print_timing
-def calculate_part2(file: str, shape_file: str):
+def calculate_part2(file: str, shape_file: str = "shapes.txt"):
     rocks = 1_000_000_000_000
     chamber = Chamber(file, shape_file)
     stopped_rocks, height, rows, cycle = chamber.simulate_until_cycle(rocks) # Full disclosure, inspired by animation on Reddit: https://www.reddit.com/r/adventofcode/comments/zo27vf/2022_day_17_part_2_rocks_fall_nobody_dies/
@@ -163,14 +161,11 @@ def calculate_part2(file: str, shape_file: str):
     return height + cycles_left * rows
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
-    try:
-        shape_file = sys.argv[2]
-    except:
-        shape_file = "shapes.txt"
 
-    print("Dec 17, part 1: {} (took {})".format(*calculate_part1(file, shape_file)))
-    print("Dec 17, part 2: {} (took {})".format(*calculate_part2(file, shape_file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+    puzzle.set_parameter_help("shape_file", "file with shape data")
+
+    puzzle.run()

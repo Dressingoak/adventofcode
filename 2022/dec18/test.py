@@ -1,15 +1,18 @@
+import sys
+sys.path.append('../')
+import os
 import unittest
-from solution import count_sides;
+from dec18.solution import calculate_part1, calculate_part2
 
 class TestDec18(unittest.TestCase):
 
-    file = "test.txt"
+    file = os.path.join(os.path.dirname(__file__), "test.txt")
 
     def test_part1(self):
-        self.assertEqual(count_sides(self.file, True)[0], 64)
+        self.assertEqual(calculate_part1(self.file), 64)
 
     def test_part2(self):
-        self.assertEqual(count_sides(self.file, False)[0], 58)
+        self.assertEqual(calculate_part2(self.file), 58)
 
 if __name__ == '__main__':
     unittest.main()

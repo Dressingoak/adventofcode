@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 
 def parse(file: str, size: int):
     grove: dict[tuple[int, int], str] = {}
@@ -239,23 +239,22 @@ def walk(grove: dict[tuple[int, int], list[list[str]]], instructions: list[int |
                                 break
     return 1000 * (ii * size + i + 1) + 4 * (jj * size + j + 1) + facing
 
-@print_timing
-def calculate_part1(file: str, size: int):
+def calculate_part1(file: str, size: int = 50):
     grove, instructions = parse(file, size)
     patching = patch(grove)
     return walk(grove, instructions, size, patching)
 
-@print_timing
-def calculate_part2(file: str, size: int):
+def calculate_part2(file: str, size: int = 50):
     grove, instructions = parse(file, size)
     patching = patch_cube(grove)
     return walk(grove, instructions, size, patching)
 
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 22, part 1: {} (took {})".format(*calculate_part1(file, 50)))
-    print("Dec 22, part 2: {} (took {})".format(*calculate_part2(file, 50)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+    puzzle.set_parameter_help("size", "map patch size")
+
+    puzzle.run()

@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from timing import print_timing
+from puzzle import Puzzle
 from typing import TypeVar
 
 T = TypeVar("T")
@@ -76,7 +76,6 @@ def extract(numbers: DoubleLinkedList):
         s += cur[1]
     return s
 
-@print_timing
 def calculate_part1(file: str):
     original = []
     with open(file, "r") as f:
@@ -88,7 +87,6 @@ def calculate_part1(file: str):
         numbers.move(x, x[1])
     return extract(numbers)
 
-@print_timing
 def calculate_part2(file: str):
     original = []
     with open(file, "r") as f:
@@ -102,10 +100,10 @@ def calculate_part2(file: str):
     return extract(numbers)
     
 if __name__ == '__main__':
-    try:
-        file = sys.argv[1]
-    except:
-        file = "input.txt"
 
-    print("Dec 20, part 1: {} (took {})".format(*calculate_part1(file)))
-    print("Dec 20, part 2: {} (took {})".format(*calculate_part2(file)))
+    puzzle = Puzzle(__file__)
+
+    puzzle.add_part(1, calculate_part1)
+    puzzle.add_part(2, calculate_part2)
+
+    puzzle.run()
