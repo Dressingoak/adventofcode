@@ -160,12 +160,12 @@ def calculate_part2(file: str, shape_file: str = "shapes.txt"):
     cycles_left = (rocks - stopped_rocks) // cycle
     return height + cycles_left * rows
     
+puzzle = Puzzle(__file__)
+
+puzzle.add_part(1, calculate_part1)
+puzzle.add_part(2, calculate_part2)
+puzzle.set_parameter_help("shape_file", "file with shape data")
+puzzle.set_parameter_resolve_path("shape_file")
+
 if __name__ == '__main__':
-
-    puzzle = Puzzle(__file__)
-
-    puzzle.add_part(1, calculate_part1)
-    puzzle.add_part(2, calculate_part2)
-    puzzle.set_parameter_help("shape_file", "file with shape data")
-
     puzzle.run()

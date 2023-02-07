@@ -33,10 +33,9 @@ def calculate_part1(file: str):
             s += snafu_to_decimal(line.rstrip())
     return decimal_to_snafu(s)
 
+puzzle = Puzzle(__file__)
+
+puzzle.add_part(1, calculate_part1)
+
 if __name__ == '__main__':
-
-    puzzle = Puzzle(__file__)
-
-    puzzle.add_part(1, calculate_part1)
-
     puzzle.run()

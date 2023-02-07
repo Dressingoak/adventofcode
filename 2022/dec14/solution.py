@@ -99,13 +99,12 @@ def calculate_part2(file: str, show=False):
         print(show_cave(cave))
     return c
     
+puzzle = Puzzle(__file__)
+
+puzzle.add_part(1, calculate_part1)
+puzzle.add_part(2, calculate_part2)
+puzzle.set_parameter_type_bool("show")
+puzzle.set_parameter_help("show", "display the sand dunes")
+
 if __name__ == '__main__':
-
-    puzzle = Puzzle(__file__)
-
-    puzzle.add_part(1, calculate_part1)
-    puzzle.add_part(2, calculate_part2)
-    puzzle.set_parameter_type_bool("show")
-    puzzle.set_parameter_help("show", "display the sand dunes")
-
     puzzle.run()

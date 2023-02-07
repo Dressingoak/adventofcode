@@ -36,11 +36,10 @@ def calculate_part1(file: str):
 def calculate_part2(file: str):
     return calculate(file, 10)
 
+puzzle = Puzzle(__file__)
+
+puzzle.add_part(1, calculate_part1)
+puzzle.add_part(2, calculate_part2)
+
 if __name__ == '__main__':
-
-    puzzle = Puzzle(__file__)
-
-    puzzle.add_part(1, calculate_part1)
-    puzzle.add_part(2, calculate_part2)
-
     puzzle.run()

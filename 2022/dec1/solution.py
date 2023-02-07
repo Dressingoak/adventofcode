@@ -32,11 +32,10 @@ def calculate_part2(file: str):
     l.sort(reverse=True)
     return sum(l[:3])
 
+puzzle = Puzzle(__file__)
+
+puzzle.add_part(1, calculate_part1)
+puzzle.add_part(2, calculate_part2)
+
 if __name__ == '__main__':
-
-    puzzle = Puzzle(__file__)
-
-    puzzle.add_part(1, calculate_part1)
-    puzzle.add_part(2, calculate_part2)
-
     puzzle.run()

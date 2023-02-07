@@ -35,11 +35,10 @@ def calculate_part2(file: str):
             s += int(overlaps_partially(e1, e2))
     return s
     
+puzzle = Puzzle(__file__)
+
+puzzle.add_part(1, calculate_part1)
+puzzle.add_part(2, calculate_part2)
+
 if __name__ == '__main__':
-
-    puzzle = Puzzle(__file__)
-
-    puzzle.add_part(1, calculate_part1)
-    puzzle.add_part(2, calculate_part2)
-
     puzzle.run()

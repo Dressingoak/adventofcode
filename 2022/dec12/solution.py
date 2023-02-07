@@ -54,11 +54,10 @@ def calculate_part2(file: str):
     _, dists = dijkstra(graph, end, None)
     return min(steps for (i, j), steps in dists.items() if hmap[i][j] == ord("a") and steps is not None)
     
+puzzle = Puzzle(__file__)
+
+puzzle.add_part(1, calculate_part1)
+puzzle.add_part(2, calculate_part2)
+
 if __name__ == '__main__':
-
-    puzzle = Puzzle(__file__)
-
-    puzzle.add_part(1, calculate_part1)
-    puzzle.add_part(2, calculate_part2)
-
     puzzle.run()

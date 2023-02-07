@@ -48,11 +48,10 @@ def calculate_part2(file: str):
     needed = 30000000 - (70000000 - contents["/"])
     return min(s for s in contents.values() if s >= needed)
     
+puzzle = Puzzle(__file__)
+
+puzzle.add_part(1, calculate_part1)
+puzzle.add_part(2, calculate_part2)
+
 if __name__ == '__main__':
-
-    puzzle = Puzzle(__file__)
-
-    puzzle.add_part(1, calculate_part1)
-    puzzle.add_part(2, calculate_part2)
-
     puzzle.run()

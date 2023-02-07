@@ -5,9 +5,7 @@ rm -f solutions.txt
 
 for day in {1..25}
 do
-    cd "dec$day"
-    py ./solution.py --no-color | tee -a ../solutions.txt
-    cd ..
+    py . "dec$day" --no-color | tee -a solutions.txt
 done
 
 read

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import time
 from functools import wraps
@@ -69,17 +70,24 @@ def timeit(func, repeat_atleast):
 
 class Puzzle(object):
 
-    defaults = {
-        "file": {"help": "file to process", "default": "input.txt"}
-    }
-
-    def __init__(self, script: str):
+    def __init__(self, script: str, use_defaults: bool = True):
         path = Path(script)
+        self.script = script
         self.day = int(path.parent.name[3:])
         self.year = int(path.parent.parent.name)
         self.arguments = {}
         self.callables = {}
-        self.parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        self.use_defaults = use_defaults
+
+        cwd = os.getcwd()
+        self.defaults = {
+            "file": {"help": "file to process", "default": self.resolve_relative_path("input.txt")}
+        }
+        self.parser = None
+
+    def resolve_relative_path(self, file: str):
+        cwd = os.getcwd()
+        return os.path.relpath(os.path.join(os.path.dirname(self.script), file), cwd)
 
     def add_part(self, part: int, func):
         signature = inspect.signature(func)
@@ -114,12 +122,20 @@ class Puzzle(object):
 
     def set_parameter_type_bool(self, name: str):
         self.arguments[name]["kwargs"]["action"] = "store_true"
-        
 
-    def build_parser(self, use_defaults: bool = True):
+    def set_parameter_resolve_path(self, name: str, arg: str = "default"):
+        value = self.arguments[name]["kwargs"][arg]
+        self.arguments[name]["kwargs"][arg] = self.resolve_relative_path(value)
+
+    def build_parser(self, parser = None):
+        if parser is None:
+            self.parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        else:
+            self.parser = parser
+
         # Apply defaults to arguments
-        if use_defaults:
-            for param, kwargs in Puzzle.defaults.items():
+        if self.use_defaults:
+            for param, kwargs in self.defaults.items():
                 if param in self.arguments:
                     for k, v in kwargs.items():
                         if k not in self.arguments[param]["kwargs"]:
@@ -145,9 +161,11 @@ class Puzzle(object):
             kwargs = properties["kwargs"]
             specific_args.add_argument(f"--{param}", **kwargs)
 
-    def run(self):
-        self.build_parser()
-        args = self.parser.parse_args()
+    def run(self, args = None):
+        if self.parser is None:
+            self.build_parser()
+        if args is None:
+            args = self.parser.parse_args()
         
         for part in args.parts:
             part = part
