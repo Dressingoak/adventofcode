@@ -70,6 +70,12 @@ def timeit(func, repeat_atleast):
 
 class Puzzle(object):
 
+    def add_general_group(parser):
+        general_args = parser.add_argument_group('general', 'arguments applicable to the execution of the puzzle')
+        general_args.add_argument("-c", "--color", action=argparse.BooleanOptionalAction, help="add color to output information", default=True)
+        general_args.add_argument("-r", "--result-only", dest="result_only", action="store_true", help="only print the result", default=False)
+        general_args.add_argument("-b", "--benchmark", metavar="DURATION", help="repeat the method for at least DURATION seconds", default=0.0, type=float)
+
     def __init__(self, script: str, use_defaults: bool = True):
         path = Path(script)
         self.script = script
@@ -130,6 +136,7 @@ class Puzzle(object):
     def build_parser(self, parser = None):
         if parser is None:
             self.parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+            Puzzle.add_general_group(self.parser)
         else:
             self.parser = parser
 
@@ -148,12 +155,8 @@ class Puzzle(object):
                 properties["kwargs"]["help"] = f"applies to parts: {parts}"
 
         # Arguments that applies to the CLI itself
-        general_args = self.parser.add_argument_group('general', 'arguments applicable to the execution of the puzzle')
         parts = [part for part in sorted(_ for _ in self.callables.keys())]
-        general_args.add_argument("-c", "--color", action=argparse.BooleanOptionalAction, help="add color to output information", default=True)
-        general_args.add_argument("-r", "--result-only", dest="result_only", action="store_true", help="only print the result", default=False)
-        general_args.add_argument("-p", "--parts", nargs="+", choices=parts, help="parts to run", default=parts, type=int)
-        general_args.add_argument("-b", "--benchmark", metavar="DURATION", help="repeat the method for at least DURATION seconds", default=0.0, type=float)
+        self.parser.add_argument("-p", "--parts", nargs="+", choices=parts, help="parts to run", default=parts, type=int)
 
         # Arguments that applies to the individual parts
         specific_args = self.parser.add_argument_group('specific', 'arguments applicable to the specific calculations')
