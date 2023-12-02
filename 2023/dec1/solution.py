@@ -42,25 +42,20 @@ def part2(file: str):
     sum = 0
     with open(file, "r") as f:
         for line in f.readlines():
-            line = line.strip()
             full = len(line)
             first = True
             last = None
             loc = 0
 
             while full - loc > 0:
-                broke = False
                 for pattern, value in digits.items():
                     if line[loc:].startswith(pattern):
                         if first:
                             sum += value * 10
                             first = False
                         last = value
-                        loc += 1
-                        broke = True
                         break
-                if not broke:
-                    loc += 1
+                loc += 1
             sum += last
     return sum
 
