@@ -28,14 +28,14 @@ def part2(file: str):
         "seven": 7,
         "eight": 8,
         "nine": 9,
-        "1": 1, 
+        "1": 1,
         "2": 2,
         "3": 3,
         "4": 4,
         "5": 5,
-        "6": 6, 
-        "7": 7, 
-        "8": 8, 
+        "6": 6,
+        "7": 7,
+        "8": 8,
         "9": 9,
     }
 
@@ -60,6 +60,6 @@ def part2(file: str):
     return sum
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
     print(f"{part2('input.txt')=}")

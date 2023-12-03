@@ -40,6 +40,6 @@ def part2(file: str):
     return sum
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
     print(f"{part2('input.txt')=}")
