@@ -1,5 +1,4 @@
 import argparse
-import os
 import glob
 import importlib.util
 import timeit
@@ -86,8 +85,6 @@ if not hasattr(args, "which"):
 days = [args.day] if args.day is not None else choices
 parts = [args.part] if args.part is not None else [1, 2]
 
-# "AoC '23" in NScript ASCII art
-
 
 paths = f"dec<day>/{args.file}"
 print(f"Running {days=}, {parts=}, {paths=}, {args.which=}")
@@ -95,9 +92,7 @@ if args.which == "timeit":
     print(
         f"Repeats: {args.repeats}, number of executions within each repetition: {args.number}"
     )
-print(args)
 
-timings = []
 
 for day in days:
     print("---")
