@@ -1,7 +1,4 @@
-values = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
-
-
-def get_value(hand: str):
+def get_value(hand: str, values: list[int]):
     s = 0
     for c in hand:
         s *= 13
@@ -9,40 +6,46 @@ def get_value(hand: str):
     return s
 
 
-def analyze(hand: str):
+def get_type_from_counts(sorted_counts: list[int]):
+    s = {}
+    match sorted_counts:
+        case [5]:
+            return 7  # Five of a kind
+        case [1, 4]:
+            return 6  # Four of a kind
+        case [2, 3]:
+            return 5  # Full house
+        case [1, 1, 3]:
+            return 4  # Three of a kind
+        case [1, 2, 2]:
+            return 3  # Two pairs
+        case [1, 1, 1, 2]:
+            return 2  # One pair
+        case [1, 1, 1, 1, 1]:
+            return 1  # High card
+
+
+def get_type(hand: str):
     s = {}
     for c in hand:
         if c in s:
             s[c] += 1
         else:
             s[c] = 1
-    hand_value = get_value(hand)
-    match sorted(_ for _ in s.values()):
-        case [5]:
-            return (7, hand_value)  # Five of a kind
-        case [1, 4]:
-            return (6, hand_value)  # Four of a kind
-        case [2, 3]:
-            return (5, hand_value)  # Full house
-        case [1, 1, 3]:
-            return (4, hand_value)  # Three of a kind
-        case [1, 2, 2]:
-            return (3, hand_value)  # Two pairs
-        case [1, 1, 1, 2]:
-            return (2, hand_value)  # One pair
-        case [1, 1, 1, 1, 1]:
-            return (1, hand_value)  # High card
+    return get_type_from_counts(sorted(_ for _ in s.values()))
 
 
 def part1(file: str):
+    values = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
     max_rank = 0
     hands = []
     with open(file, "r") as f:
         for line in f.readlines():
             match line.split():
                 case [hand, bid]:
-                    print(hand, get_value(hand))
-                    hands.append((hand, int(bid), *analyze(hand)))
+                    hands.append(
+                        (hand, int(bid), get_type(hand), get_value(hand, values))
+                    )
             max_rank += 1
     hands.sort(key=lambda x: (x[2], x[3]))
     return sum(r * hand[1] for r, hand in zip(range(1, max_rank + 1), hands))
