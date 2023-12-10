@@ -3,8 +3,9 @@ import glob
 import importlib.util
 import timeit
 import time
+import math
 
-choices = [int(f.rstrip("/\\")[3:]) for f in glob.glob("dec*/")]
+choices = sorted([int(f.rstrip("/\\")[3:]) for f in glob.glob("dec*/")])
 with open("art.txt") as f:
     ascii_art = f.read()
 
@@ -109,13 +110,13 @@ for day in days:
                 fun = module.part1
             case 2:
                 fun = module.part2
-        print(f"Dec {day}, part {part}: ", end="")
+        day_str = f"Dec {day}, part {part}: "
         match args.which:
             case "run":
                 start = time.time()
                 v = fun(path)
                 duration = (time.time() - start) * 1_000
-                print(f"{v} ({duration:.0f} ms)")
+                print(f"{day_str}{v} ({duration:.0f} ms)")
             case "timeit":
                 with open(f"dec{day}/solution.py") as f:
                     stmt = f"part{part}('{path}')"
@@ -125,4 +126,7 @@ for day in days:
                         / args.number
                         * 1000
                     )
-                    print(f"{duration:.3f} ms")
+                    timing = f"{day_str}{duration:.3f} ms"
+                    w = duration // 5
+                    
+                    print(f"{timing: <30}| {' ':-<{w}}o")
