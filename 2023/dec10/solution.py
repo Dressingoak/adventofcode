@@ -10,9 +10,8 @@ pieces = {
 directions = {0: (0, -1), 1: (-1, 0), 2: (0, 1), 3: (1, 0)}
 
 
-def part1(file: str):
+def follow_main_loop(file: str):
     grid = []
-    dist = 0
     with open(file, "r") as f:
         for i, line in enumerate(f.readlines()):
             row = []
@@ -20,9 +19,10 @@ def part1(file: str):
                 row.append(c)
                 if c == "S":
                     start = (i, j)
+                    yield start
             grid.append(row)
     rows, cols = len(grid), len(grid[0])
-    (i, j) = start
+    i, j = start
     adjacent = {
         k: v
         for k, v in {
@@ -32,26 +32,32 @@ def part1(file: str):
         }.items()
         if v != "." and (k + 2) % 4 in pieces[v]
     }
-    if len(adjacent) == 2:
-        match next(_ for _ in adjacent.keys()):
+    d = next(_ for _ in adjacent.keys())
+    di, dj = directions[d]
+    node = (i + di, j + dj)
+    prev_dir = (d + 2) % 4
+    while node != start:
+        yield node
+        k, l = node
+        piece = grid[k][l]
+        match next(d for d in pieces[piece] if d != prev_dir):
             case d:
-                (di, dj) = directions[d]
-                node = (i + di, j + dj)
+                (dk, dl) = directions[d]
+                node = (k + dk, l + dl)
                 prev_dir = (d + 2) % 4
-                dist += 1
-        while node != start:
-            k, l = node
-            piece = grid[k][l]
-            match next(d for d in pieces[piece] if d != prev_dir):
-                case d:
-                    (dk, dl) = directions[d]
-                    node = (k + dk, l + dl)
-                    prev_dir = (d + 2) % 4
-                    dist += 1
-    else:
-        raise Exception("More pieces connect to S")
-    return dist // 2
+
+
+def part1(file: str):
+    d = 0
+    for _ in follow_main_loop(file):
+        d += 1
+    return d // 2
+
+
+def part2(file: str):
+    return 0
 
 
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
