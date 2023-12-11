@@ -1,4 +1,4 @@
-def part1(file: str):
+def parse_and_expand(file: str, by: int):
     galaxies = []
     dist = 0
     with open(file, "r") as f:
@@ -17,12 +17,12 @@ def part1(file: str):
                     galaxies.append((i + ii, j))
                     cols[j] += 1
             if found == 0:
-                ii += 1
+                ii += by
     jj = 0
     galaxies2 = []
     for j, v in enumerate(cols):
         if v == 0:
-            jj += 1
+            jj += by
         galaxies2.extend((i, l + jj) for (i, l) in galaxies if j == l)
     for i, (i1, j1) in enumerate(galaxies2):
         for i2, j2 in galaxies2[(i + 1) :]:
@@ -31,5 +31,14 @@ def part1(file: str):
     return dist
 
 
+def part1(file: str):
+    return parse_and_expand(file, 1)
+
+
+def part2(file: str):
+    return parse_and_expand(file, 1000000 - 1)
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
