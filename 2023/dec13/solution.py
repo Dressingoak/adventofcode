@@ -1,3 +1,17 @@
+def parse(file: str):
+    with open(file, "r") as f:
+        rows = []
+        for line in f.readlines():
+            match line.strip():
+                case "":
+                    yield rows
+                    rows = []
+                case row:
+                    cs = [c == "#" for c in row]
+                    rows.append(cs)
+    yield rows
+
+
 def find_reflection(lst: list[int]):
     s = len(lst)
     odd = s % 2 == 1
@@ -12,7 +26,7 @@ def find_reflection(lst: list[int]):
                 break
         if cont:
             continue
-        return i + 1
+        yield i + 1
 
 
 def get_mirror_value(rows: list[list[bool]]):
@@ -24,29 +38,32 @@ def get_mirror_value(rows: list[list[bool]]):
                 r += 2**j
                 cw[j] += 2**i
         rw.append(r)
-    if v := find_reflection(rw):
-        return v * 100
-    elif v := find_reflection(cw):
-        return v
-    else:
-        return 0
+    for i in find_reflection(rw):
+        yield i * 100
+    for j in find_reflection(cw):
+        yield j
 
 
 def part1(file: str):
-    sum = 0
-    with open(file, "r") as f:
-        rows = []
-        for line in f.readlines():
-            match line.strip():
-                case "":
-                    sum += get_mirror_value(rows)
-                    rows = []
-                case row:
-                    cs = [c == "#" for c in row]
-                    rows.append(cs)
-    sum += get_mirror_value(rows)
-    return sum
+    return sum(next(get_mirror_value(rows)) for rows in parse(file))
+
+
+def get_mirror_value_corrected(rows: list[list[bool]]):
+    y = next(get_mirror_value(rows))
+    for i in range(len(rows)):
+        for j in range(len(rows[i])):
+            rows[i][j] = not rows[i][j]
+            for x in get_mirror_value(rows):
+                if x == y:
+                    continue
+                return x
+            rows[i][j] = not rows[i][j]
+
+
+def part2(file: str):
+    return sum(get_mirror_value_corrected(rows) for rows in parse(file))
 
 
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
