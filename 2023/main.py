@@ -127,6 +127,6 @@ for day in days:
                         * 1000
                     )
                     timing = f"{day_str}{duration:.3f} ms"
-                    w = duration // 5
+                    w = duration // 10
                     
                     print(f"{timing: <30}| {' ':-<{w}}o")
