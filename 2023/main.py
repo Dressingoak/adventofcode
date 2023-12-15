@@ -113,10 +113,14 @@ for day in days:
         day_str = f"Dec {day}, part {part}: "
         match args.which:
             case "run":
-                start = time.time()
+                start = time.perf_counter()
                 v = fun(path)
-                duration = (time.time() - start) * 1_000
-                print(f"{day_str}{v} ({duration:.0f} ms)")
+                duration = (time.perf_counter() - start) * 1_000
+                if duration < 10:
+                    duration_formatted = f"{duration:.1f}"
+                else:
+                    duration_formatted = f"{duration:.0f}"
+                print(f"{day_str}{v} ({duration_formatted} ms)")
             case "timeit":
                 with open(f"dec{day}/solution.py") as f:
                     stmt = f"part{part}('{path}')"
