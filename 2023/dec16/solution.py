@@ -1,6 +1,5 @@
-def part1(file: str):
+def parse(file: str):
     mirrors = {}
-    visited = set()
     with open(file, "r") as f:
         for i, line in enumerate(f.readlines()):
             for j, c in enumerate(line.strip()):
@@ -10,9 +9,12 @@ def part1(file: str):
                     mirrors[i] = {j: c}
                 else:
                     mirrors[i][j] = c
-    rows, cols = i + 1, j + 1
+    return mirrors, i + 1, j + 1
 
-    beams = [(0, -1, 2)]
+
+def count_energized(start, mirrors, rows, cols):
+    visited = set()
+    beams = [start]
     while len(beams) > 0:
         match beams[-1]:
             case (i, j, 0) if j > 0:
@@ -68,5 +70,21 @@ def part1(file: str):
     return len(set((i, j) for i, j, _ in visited))
 
 
+def part1(file: str):
+    mirrors, rows, cols = parse(file)
+    return count_energized((0, -1, 2), mirrors, rows, cols)
+
+
+def part2(file: str):
+    mirrors, rows, cols = parse(file)
+    edge = []
+    for i in range(rows):
+        edge.extend([(i, -1, 2), (i, cols, 0)])
+    for j in range(cols):
+        edge.extend([(-1, j, 3), (rows, j, 1)])
+    return max(count_energized(e, mirrors, rows, cols) for e in edge)
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
