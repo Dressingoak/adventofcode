@@ -2,7 +2,7 @@ import unittest
 from solution import part1, part2
 
 
-class TestDec9(unittest.TestCase):
+class TestDec10(unittest.TestCase):
     def test_part1_1(self):
         self.assertEqual(part1("test.txt"), 4)
 
@@ -18,7 +18,7 @@ class TestDec9(unittest.TestCase):
     def test_part2_3(self):
         self.assertEqual(part2("test4.txt"), 8)
 
-    def test_part2_3(self):
+    def test_part2_4(self):
         self.assertEqual(part2("test5.txt"), 10)
 
 
