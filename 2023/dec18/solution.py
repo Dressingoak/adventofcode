@@ -33,34 +33,32 @@ def nodes(x, y, prv, nxt):
             return (x + 1, y + 1), (x + 1, y)
 
 
-def part1(file: str):
-    with open(file, "r") as f:
-        points = []
-        prv = None
-        x, y = 0, 0
-        lines = f.readlines()
-        for line in [lines[-1]] + lines:
-            nxt, amount, _ = line.split(" ", 2)
-            amount = int(amount)
-            if prv is None:
-                prv = nxt
-                continue
-            match prv:
-                case None:
-                    pass
-                case _:
-                    p1, p2 = nodes(x, y, prv, nxt)
-                    points.append((p1, p2))
-            match nxt:
-                case "U":
-                    y += amount
-                case "L":
-                    x -= amount
-                case "D":
-                    y -= amount
-                case "R":
-                    x += amount
+def shoelace(gen):
+    points = []
+    prv = None
+    x, y = 0, 0
+
+    for nxt, amount in gen():
+        if prv is None:
+            first = nxt
             prv = nxt
+            continue
+        match prv:
+            case None:
+                pass
+            case _:
+                points.append(nodes(x, y, prv, nxt))
+        match nxt:
+            case "U":
+                y += amount
+            case "L":
+                x -= amount
+            case "D":
+                y -= amount
+            case "R":
+                x += amount
+        prv = nxt
+    points.append(nodes(x, y, prv, first))
 
     dets = [0, 0]
     for i in range(-1, len(points) - 1):
@@ -69,6 +67,16 @@ def part1(file: str):
             dets[n] += det(p1[n][0], p1[n][1], p2[n][0], p2[n][1])
     areas = [abs(_) // 2 for _ in dets]
     return max(areas)
+
+
+def part1(file: str):
+    def gen():
+        with open(file, "r") as f:
+            for line in f.readlines():
+                nxt, amount, _ = line.split(" ", 2)
+                yield nxt, int(amount)
+
+    return shoelace(gen)
 
 
 if __name__ == "__main__":
