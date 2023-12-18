@@ -8,29 +8,18 @@ def nodes(x, y, prv, nxt):
             return (x, y), (x + 1, y + 1)
         case "U", "R":
             return (x, y + 1), (x + 1, y)
-        case None, "U":
-            return (x, y + 1), (x + 1, y + 1)
-
         case "L", "U":
             return (x, y), (x + 1, y + 1)
         case "L", "D":
             return (x + 1, y), (x, y + 1)
-        case None, "L":
-            return (x, y), (x, y + 1)
-
         case "D", "L":
             return (x + 1, y), (x, y + 1)
         case "D", "R":
             return (x + 1, y + 1), (x, y)
-        case None, "D":
-            return (x + 1, y), (x, y)
-
         case "R", "U":
             return (x, y + 1), (x + 1, y)
         case "R", "D":
             return (x + 1, y + 1), (x, y)
-        case None, "R":
-            return (x + 1, y + 1), (x + 1, y)
 
 
 def shoelace(gen):
