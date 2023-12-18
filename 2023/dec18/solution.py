@@ -79,5 +79,26 @@ def part1(file: str):
     return shoelace(gen)
 
 
+def part2(file: str):
+    def gen():
+        with open(file, "r") as f:
+            for line in f.readlines():
+                _, _, data = line.split(" ")
+                amount = int(data[2:7], 16)
+                match data[7]:
+                    case "0":
+                        nxt = "R"
+                    case "1":
+                        nxt = "D"
+                    case "2":
+                        nxt = "L"
+                    case "3":
+                        nxt = "U"
+                yield nxt, amount
+
+    return shoelace(gen)
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
