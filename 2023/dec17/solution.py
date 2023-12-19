@@ -70,29 +70,34 @@ def a_star(gen, start, end_eval, heuristic):
     return current, cost_until[current]
 
 
-def move_crucibles(m, cur: tuple[int, int, int, int]):
+def move_crucibles(m, cur, lo, hi):
     match cur:
-        case (i, j, d, s):
-            for x in range(-1, 2):
+        case (i, j, d):
+            for x in [-1, 1]:
                 nd = (d + x) % 4
-                if nd == d and s == 2:
-                    continue
-                ii = i + (nd - 2 if nd % 2 == 1 else 0)
-                jj = j + (nd - 1 if nd % 2 == 0 else 0)
-                if ii >= 0 and jj >= 0:
-                    try:
-                        v = m[ii][jj]
-                        yield (ii, jj, nd, s + 1 if nd == d else 0), v
-                    except IndexError:
-                        pass
+                for s in range(lo, hi + 1):
+                    ii = i + s * (nd - 2 if nd % 2 == 1 else 0)
+                    jj = j + s * (nd - 1 if nd % 2 == 0 else 0)
+                    if ii >= 0 and jj >= 0:
+                        try:
+                            match nd:
+                                case 0:
+                                    v = sum(m[i][n] for n in range(j - 1, jj - 1, -1))
+                                case 1:
+                                    v = sum(m[n][j] for n in range(i - 1, ii - 1, -1))
+                                case 2:
+                                    v = sum(m[i][n] for n in range(j + 1, jj + 1))
+                                case 3:
+                                    v = sum(m[n][j] for n in range(i + 1, ii + 1))
+                            yield (ii, jj, nd), v
+                        except IndexError:
+                            pass
         case (i, j):
-            for d in range(4):
-                for (ii, jj, nd, s), v in move_crucibles(m, (i, j, d, 0)):
-                    if s == 1:
-                        yield ((ii, jj, nd, 1), v)
+            yield from move_crucibles(m, (i, j, 1), lo, hi)
+            yield from move_crucibles(m, (i, j, 0), lo, hi)
 
 
-def part1(file: str):
+def solve(file: str, lo: int, hi: int):
     with open(file, "r") as f:
         m = []
         for line in f.readlines():
@@ -100,7 +105,7 @@ def part1(file: str):
     rows, cols = len(m), len(m[0])
 
     _, cost = a_star(
-        lambda x: move_crucibles(m, x),
+        lambda x: move_crucibles(m, x, lo, hi),
         (0, 0),
         lambda x: x[0] == rows - 1 and x[1] == cols - 1,
         lambda x: (rows - 1 - x[0]) + (cols - 1 - x[1]),
@@ -108,48 +113,12 @@ def part1(file: str):
     return cost
 
 
-def move_ultra_crucibles(m, cur: tuple[int, int, int, int]):
-    match cur:
-        case (i, j, d, s):
-            for x in range(-1, 2):
-                nd = (d + x) % 4
-                if nd != d and s < 4:
-                    continue
-                if nd == d and s == 10:
-                    continue
-                ii = i + (nd - 2 if nd % 2 == 1 else 0)
-                jj = j + (nd - 1 if nd % 2 == 0 else 0)
-                if ii >= 0 and jj >= 0:
-                    try:
-                        v = m[ii][jj]
-                        yield (ii, jj, nd, s + 1 if nd == d else 1), v
-                    except IndexError:
-                        pass
-        case (i, j):
-            u = set()
-            for d in range(4):
-                for x in move_ultra_crucibles(m, (i, j, d, 0)):
-                    (_, _, _, s), _ = x
-                    if s == 1:
-                        u.add(x)
-            for x in u:
-                yield x
+def part1(file: str):
+    return solve(file, 1, 3)
 
 
 def part2(file: str):
-    with open(file, "r") as f:
-        m = []
-        for line in f.readlines():
-            m.append([int(v) for v in line.strip()])
-    rows, cols = len(m), len(m[0])
-
-    _, cost = a_star(
-        lambda x: move_ultra_crucibles(m, x),
-        (0, 0),
-        lambda x: x[0] == rows - 1 and x[1] == cols - 1 and x[3] >= 4,
-        lambda x: (rows - 1 - x[0]) + (cols - 1 - x[1]),
-    )
-    return cost
+    return solve(file, 4, 10)
 
 
 if __name__ == "__main__":
