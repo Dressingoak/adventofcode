@@ -2,13 +2,37 @@ def det(x1, y1, x2, y2):
     return x1 * y2 - x2 * y1
 
 
-def shoelace_with_picks(gen):
-    x0, y0 = 0, 0
+def nodes(x, y, prv, nxt):
+    match prv, nxt:
+        case "U", "L":
+            return (x, y), (x + 1, y + 1)
+        case "U", "R":
+            return (x, y + 1), (x + 1, y)
+        case "L", "U":
+            return (x, y), (x + 1, y + 1)
+        case "L", "D":
+            return (x + 1, y), (x, y + 1)
+        case "D", "L":
+            return (x + 1, y), (x, y + 1)
+        case "D", "R":
+            return (x + 1, y + 1), (x, y)
+        case "R", "U":
+            return (x, y + 1), (x + 1, y)
+        case "R", "D":
+            return (x + 1, y + 1), (x, y)
+
+
+def shoelace(gen):
+    points = []
+    prv = None
     x, y = 0, 0
-    b = 0
-    signed_double_area = 0
+
     for nxt, amount in gen():
-        b += amount
+        if prv is None:
+            first = nxt
+            prv = nxt
+            continue
+        points.append(nodes(x, y, prv, nxt))
         match nxt:
             case "U":
                 y += amount
@@ -18,14 +42,16 @@ def shoelace_with_picks(gen):
                 y -= amount
             case "R":
                 x += amount
-        signed_double_area += det(x0, y0, x, y)  # The Shoelace formula
-        x0, y0 = (x, y)
-    A = abs(signed_double_area // 2)
-    # Pick's theorem: For a simple polygon, the area is given by
-    #   A = i + b / 2 - 1
-    # where A is the area, i in the interior integer points and b is the points on the boundary.
-    # We calculate A with the Shoelace formula, and we seek i + b = A + b / 2 + 1
-    return A + b // 2 + 1
+        prv = nxt
+    points.append(nodes(x, y, prv, first))
+
+    dets = [0, 0]
+    for i in range(-1, len(points) - 1):
+        p1, p2 = points[i], points[i + 1]
+        for n in range(2):
+            dets[n] += det(p1[n][0], p1[n][1], p2[n][0], p2[n][1])
+    areas = [abs(_) // 2 for _ in dets]
+    return max(areas)
 
 
 def part1(file: str):
@@ -35,7 +61,7 @@ def part1(file: str):
                 nxt, amount, _ = line.split(" ", 2)
                 yield nxt, int(amount)
 
-    return shoelace_with_picks(gen)
+    return shoelace(gen)
 
 
 def part2(file: str):
@@ -55,7 +81,7 @@ def part2(file: str):
                         nxt = "U"
                 yield nxt, amount
 
-    return shoelace_with_picks(gen)
+    return shoelace(gen)
 
 
 if __name__ == "__main__":

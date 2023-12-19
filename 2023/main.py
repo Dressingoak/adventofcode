@@ -3,7 +3,7 @@ import glob
 import importlib.util
 import timeit
 import time
-import math
+import os
 
 choices = sorted([int(f.rstrip("/\\")[3:]) for f in glob.glob("dec*/")])
 with open("art.txt") as f:
@@ -35,6 +35,15 @@ parser.add_argument(
     choices=[1, 2],
     metavar="P",
     help="specific part to pick",
+)
+
+parser.add_argument(
+    "-s",
+    "--script",
+    required=False,
+    metavar="S",
+    default="solution.py",
+    help="script to use (default='solution.py')",
 )
 
 parser.add_argument(
@@ -97,7 +106,9 @@ if args.which == "timeit":
 
 for day in days:
     print("---")
-    spec = importlib.util.spec_from_file_location("solution", f"dec{day}/solution.py")
+    spec = importlib.util.spec_from_file_location(
+        "solution", os.path.join(f"dec{day}", args.script)
+    )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     if hasattr(args, "local") and args.local is True:
@@ -122,7 +133,7 @@ for day in days:
                     duration_formatted = f"{duration:.0f}"
                 print(f"{day_str}{v} ({duration_formatted} ms)")
             case "timeit":
-                with open(f"dec{day}/solution.py") as f:
+                with open(os.path.join(f"dec{day}", args.script)) as f:
                     stmt = f"part{part}('{path}')"
                     t = timeit.Timer(stmt=stmt, setup=f.read())
                     duration = (
@@ -132,5 +143,5 @@ for day in days:
                     )
                     timing = f"{day_str}{duration:.3f} ms"
                     w = duration // 10
-                    
+
                     print(f"{timing: <30}| {' ':-<{w}}o")
