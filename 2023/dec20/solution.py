@@ -109,7 +109,7 @@ def part2(file: str):
     cycles = {k: [] for k in watch.keys()}
     c = 1
     while True:
-        _, _, low, high = press(modules)
+        press(modules)
         for con, ring in watch.items():
             highs = {k: modules[k][2] for k in modules[ring][1] if k != con}
             lows = {k: not v for k, v in modules[ring][2].items()}
