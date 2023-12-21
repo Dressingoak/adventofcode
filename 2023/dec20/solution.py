@@ -81,5 +81,51 @@ def part1(file: str):
     return low * high
 
 
+def gcd(a, b):
+    while b != 0:
+        t = b
+        b = a % b
+        a = t
+    return a
+
+
+def lcm(*values):
+    result = 1
+    for value in values:
+        result = (result * value) // gcd(result, value)
+    return result
+
+
+def part2(file: str):
+    modules = parse(file)
+
+    for _, v in modules.items():
+        match v:
+            case ["&", ["rx"], inputs]:
+                watch = {
+                    k: next(_ for _ in modules[k][2].keys()) for k in inputs.keys()
+                }
+                break
+    cycles = {k: [] for k in watch.keys()}
+    c = 1
+    while True:
+        _, _, low, high = press(modules)
+        for con, ring in watch.items():
+            highs = {k: modules[k][2] for k in modules[ring][1] if k != con}
+            lows = {k: not v for k, v in modules[ring][2].items()}
+            if all(s for s in {**highs, **lows}.values()):
+                match cycles[con]:
+                    case []:
+                        cycles[con].append(c)
+                    case [offset]:
+                        cycles[con].append(c - offset)
+        if all(len(v) == 2 for v in cycles.values()):
+            break
+        c += 1
+
+    return lcm(*[v[1] for v in cycles.values()])
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
