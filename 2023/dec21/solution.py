@@ -143,31 +143,43 @@ def find_cost(field, start, parity, max_dist):
     return d
 
 
-def part2(file: str, steps=26501365):
-    field, start, rows, cols = parse_field(file)
+def part2_naive(file: str, steps=26501365):
+    field, start, _, _ = parse_field(file)
 
     parity = (sum(start) + steps % 2) % 2
 
     d = {k: v for k, v in find_cost(field, start, parity, steps).items() if v <= steps}
     return len(d)
 
-    # for i in range(-1, 2):
-    #     for ii in range(rows):
-    #         for j in range(-1, 2):
-    #             for jj in range(cols):
-    #                 if (i*rows + ii, j*cols + jj) in d:
-    #                     print("O", end="")
-    #                 else:
-    #                     if (ii, jj) != start:
-    #                         print(field[ii][jj], end="")
-    #                     else:
-    #                         print(".", end="")
-    #         print()
 
-    # return sum(
-    #     1 for v in d.values() if v is not None and v <= steps and v % 2 == steps % 2
-    # )
-    return 0
+def part2(file: str):
+    steps = 26501365
+    # Total steps = 26501365 = 2023 * 100 * 131 + 65
+    field, start, size, _ = parse_field(file)  # Assume rows == cols
+    mid = size // 2  # Assume S is at (rows // 2, rows // 2)
+
+    parity = (sum(start) + steps % 2) % 2
+    y = []
+    for s in range(mid, mid + 2 * size + 1, size):  # Steps 65, 65 + 131, 65 + 131 * 2
+        print(f"{s}: ", end="")
+        y.append(
+            count := sum(
+                1 for v in find_cost(field, start, parity, s).values() if v <= s
+            )
+        )
+        print(count)
+    # y.extend([3742, 33564, 93148])
+
+    # Due to the vertical, horizontal and diagonal free paths, reaching any point on the free path on the diagonal
+    # takes <= steps required by going through the fields. Also, the asked number of steps pefectly fit inside free
+    # paths. The first observation means that the number of reachable spots grow quadratically. Thus, interpolate a
+    # 2nd order polynomial P from (0, y[0]), (1, y[1]) and (2, y[2]) and find P(2023 * 100)
+    # P(x) = a * x**2 + b * x + c
+    c = y[0]  # From P(0) = c
+    a = (c + y[2]) // 2 - y[1]  # From P(1) = a + b + c, P(2) = 4 * a + 2 * b + c
+    b = y[1] - a - c
+    x = (steps - mid) // size
+    return a * x**2 + b * x + c
 
 
 if __name__ == "__main__":
