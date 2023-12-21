@@ -11,6 +11,28 @@ def parse(file: str):
                     mirrors[i][j] = c
     return mirrors, i + 1, j + 1
 
+def parse2(file: str):
+    mirror_map = {2: {}, 3: {}}
+    with open(file, "r") as f:
+        for i, line in enumerate(f.readlines()):
+            for j, c in enumerate(line.strip()):
+                if c == ".":
+                    continue
+                if c != "-":
+                    if i not in mirror_map[2]:
+                        mirror_map[2][i] = []
+                    match 
+                    mirror_map[2][i].append((j, c))
+                if c != "|":
+                    if j not in mirror_map[3]:
+                        mirror_map[3][j] = []
+                    mirror_map[3][j].append((i, c))
+    rows, cols = i + 1, j + 1
+    # mirror_map[0] = {k: [_ for _ in reversed(v)] for k, v in mirror_map[2].items()}
+    # mirror_map[1] = {k: [_ for _ in reversed(v)] for k, v in mirror_map[3].items()}
+                
+    return mirror_map, i + 1, j + 1
+
 
 def count_energized(start, mirrors, rows, cols):
     visited = set()
@@ -86,5 +108,9 @@ def part2(file: str):
 
 
 if __name__ == "__main__":
-    print(f"{part1('input.txt')=}")
-    print(f"{part2('input.txt')=}")
+    import json
+    m, rows, cols = parse2('test.txt')
+    print(json.dumps(m, indent=2))
+
+    print(f"{part1('test.txt')=}")
+    print(f"{part2('test.txt')=}")
