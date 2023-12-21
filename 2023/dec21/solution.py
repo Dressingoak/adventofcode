@@ -54,30 +54,7 @@ class MinPriorityQueue:
             return None
 
 
-def dijkstra(keys, gen, start, end):
-    Q = MinPriorityQueue()
-    dist = dict()
-    for v in keys():
-        Q.insert(v, None)
-        dist[v] = None
-    dist[start] = 0
-    Q.insert(start, 0)
-    while len(Q) > 0:
-        u, d = Q.pop()
-        if u == end:
-            return (d, dist)
-        for v, x in gen(u):
-            try:
-                alt = dist[u] + x
-            except:
-                return (None, dist)
-            if dist[v] is None or alt < dist[v]:
-                dist[v] = alt
-                Q.insert(v, alt)
-    return (None, dist)
-
-
-def part1(file: str, steps=64):
+def parse_field(file: str):
     field = []
     with open(file, "r") as f:
         for i, line in enumerate(f):
@@ -87,35 +64,112 @@ def part1(file: str, steps=64):
                 if c == "S":
                     start = (i, j)
             field.append(row)
-    rows, cols = i + 1, j + 1
+    return field, start, i + 1, j + 1
 
-    def keys():
-        i0, j0 = start
-        for i, row in enumerate(field):
-            for j, c in enumerate(row):
-                if c != "#" and abs(i0 - i) + abs(j0 - j) <= steps:
-                    yield (i, j)
 
-    def gen(pos):
+def dijkstra(gen, start):
+    Q = MinPriorityQueue()
+    dist = dict()
+    dist[start] = 0
+    Q.insert(start, 0)
+    while len(Q) > 0:
+        u, _ = Q.pop()
+        for v, x in gen(u):
+            alt = dist[u] + x
+            if v not in dist or alt < dist[v]:
+                dist[v] = alt
+                Q.insert(v, alt)
+    return dist
+
+
+def part1(file: str, steps=64):
+    field, start, rows, cols = parse_field(file)
+
+    parity = (sum(start) + steps % 2) % 2
+
+    def gen_available(pos):
         for di, dj in [(0, -1), (-1, 0), (0, 1), (1, 0)]:
             i, j = pos
-            i0, j0 = start
             I, J = i + di, j + dj
             if (
                 I >= 0
                 and I < rows
                 and J >= 0
                 and J < cols
-                and abs(i0 - I) + abs(j0 - J) <= steps
+                and abs(start[0] - I) + abs(start[1] - J) <= steps
                 and field[I][J] != "#"
             ):
-                yield (I, J), 1
+                yield (I, J)
 
-    _, d = dijkstra(keys, gen, start, (-1, -1))
-    return sum(
-        1 for v in d.values() if v is not None and v <= steps and v % 2 == steps % 2
-    )
+    def gen(pos):
+        if sum(pos) % 2 == parity:
+            targets = set()
+            for u in gen_available(pos):
+                targets.update(gen_available(u))
+            for t in targets:
+                yield t, 2
+        else:
+            for u in gen_available(pos):
+                yield u, 1
+
+    return sum(1 for v in dijkstra(gen, start).values() if v <= steps)
+
+
+def find_cost(field, start, parity, max_dist):
+    rows, cols = len(field), len(field[0])
+
+    def gen_available(pos):
+        for di, dj in [(0, -1), (-1, 0), (0, 1), (1, 0)]:
+            i, j = pos
+            I, J = i + di, j + dj
+            if (
+                abs(start[0] - I) + abs(start[1] - J) <= max_dist
+                and field[I % rows][J % cols] != "#"
+            ):
+                yield (I, J)
+
+    def gen(pos):
+        if sum(pos) % 2 == parity:
+            targets = set()
+            for u in gen_available(pos):
+                targets.update(gen_available(u))
+            for t in targets:
+                yield t, 2
+        else:
+            for u in gen_available(pos):
+                yield u, 1
+
+    d = dijkstra(gen, start)
+    return d
+
+
+def part2(file: str, steps=26501365):
+    field, start, rows, cols = parse_field(file)
+
+    parity = (sum(start) + steps % 2) % 2
+
+    d = {k: v for k, v in find_cost(field, start, parity, steps).items() if v <= steps}
+    return len(d)
+
+    # for i in range(-1, 2):
+    #     for ii in range(rows):
+    #         for j in range(-1, 2):
+    #             for jj in range(cols):
+    #                 if (i*rows + ii, j*cols + jj) in d:
+    #                     print("O", end="")
+    #                 else:
+    #                     if (ii, jj) != start:
+    #                         print(field[ii][jj], end="")
+    #                     else:
+    #                         print(".", end="")
+    #         print()
+
+    # return sum(
+    #     1 for v in d.values() if v is not None and v <= steps and v % 2 == steps % 2
+    # )
+    return 0
 
 
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
