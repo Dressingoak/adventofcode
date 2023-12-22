@@ -13,6 +13,7 @@ def parse_bricks(file: str):
             bricks.append(brick)
     return bricks
 
+
 def place_bricks(bricks):
     bricks_fallen = []
     height_map = {}
@@ -25,12 +26,11 @@ def place_bricks(bricks):
             offset += max(_ for _ in intersection.values())
         height_map.update({xy: z_max - z_min + offset for xy in top_view})
         brick_fallen = set()
-        for (x, y) in top_view:
+        for x, y in top_view:
             for z in range(offset, offset + (z_max - z_min) + 1):
                 brick_fallen.add((x, y, z))
         bricks_fallen.append(brick_fallen)
     return bricks_fallen
-
 
 
 def part1(file: str):
@@ -46,5 +46,18 @@ def part1(file: str):
     return count
 
 
+def part2(file: str):
+    bricks = parse_bricks(file)
+    bricks.sort(key=lambda cube: min(z for _, _, z in cube))
+    bricks_fallen = place_bricks(bricks)
+    count = 0
+    for i in range(len(bricks_fallen)):
+        wo = [b for j, b in enumerate(bricks_fallen) if i != j]
+        wop = place_bricks(wo)
+        count += sum(1 for l, r in zip(wo, wop) if l != r)
+    return count
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
