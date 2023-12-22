@@ -2,7 +2,7 @@ import unittest
 from solution import part1, part2_naive
 
 
-class TestDec19(unittest.TestCase):
+class TestDec21(unittest.TestCase):
     def test_part1(self):
         self.assertEqual(part1("test.txt", steps=6), 16)
 
