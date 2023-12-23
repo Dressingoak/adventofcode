@@ -87,7 +87,7 @@ def part1(file: str):
     with open(file) as f:
         for line in f:
             path.append([c for c in line.strip()])
-    rows, cols = len(path), len(path[0])
+    rows = len(path)
     start = (0, path[0].index("."), 3)
     end = (rows - 1, path[rows - 1].index("."), 3)
 
@@ -119,5 +119,43 @@ def part1(file: str):
     return -graph[end]
 
 
+def part2(file: str):
+    path = []
+    with open(file) as f:
+        for line in f:
+            path.append([c for c in line.strip()])
+    rows = len(path)
+    start = (0, path[0].index("."), 3)
+    end = (rows - 1, path[rows - 1].index("."))
+
+    deltas = [(0, -1), (-1, 0), (0, 1), (1, 0)]
+
+    # Directed acyclic graph, use Dijstra with negative weights
+    def gen(node):
+        i, j, direction, *visited = node
+        for d in range(-1, 2):
+            nd = (direction + d) % 4
+            di, dj = deltas[nd]
+            I, J = i + di, j + dj
+            try:
+                match path[I][J]:
+                    case "#":
+                        pass
+                    case ".":
+                        yield (I, J, nd, *visited), -1
+                    case _ if (I, J) not in visited:
+                        yield (I, J, nd, *visited, (I, J)), -1
+            except IndexError:
+                pass
+
+    graph = dijkstra(gen, start)
+    ends = []
+    for k, v in graph.items():
+        if (k[0], k[1]) == end:
+            ends.append(-v)
+    return max(ends)
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('test.txt')=}")
