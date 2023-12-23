@@ -125,37 +125,70 @@ def part2(file: str):
         for line in f:
             path.append([c for c in line.strip()])
     rows = len(path)
-    start = (0, path[0].index("."), 3)
+    start = (0, path[0].index("."))
     end = (rows - 1, path[rows - 1].index("."))
 
     deltas = [(0, -1), (-1, 0), (0, 1), (1, 0)]
 
-    # Directed acyclic graph, use Dijstra with negative weights
-    def gen(node):
-        i, j, direction, *visited = node
-        for d in range(-1, 2):
-            nd = (direction + d) % 4
-            di, dj = deltas[nd]
-            I, J = i + di, j + dj
-            try:
-                match path[I][J]:
-                    case "#":
-                        pass
-                    case ".":
-                        yield (I, J, nd, *visited), -1
-                    case _ if (I, J) not in visited:
-                        yield (I, J, nd, *visited, (I, J)), -1
-            except IndexError:
-                pass
+    nodes = [start, end]
+    for i, row in enumerate(path):
+        for j, c in enumerate(row):
+            if c in ["<", "^", ">", "v"]:
+                nodes.append((i, j))
 
-    graph = dijkstra(gen, start)
-    ends = []
-    for k, v in graph.items():
-        if (k[0], k[1]) == end:
-            ends.append(-v)
-    return max(ends)
+    def gen(node):
+        match node:
+            case (i, j):
+                paths = {}
+                for d in range(4):
+                    for s, c in gen((i, j, d, 0)):
+                        if s not in paths or c > paths[s]:
+                            paths[s] = c
+                for s, c in paths.items():
+                    yield s, c
+            case (i, j, direction, acc):
+                for d in range(-1, 2):
+                    nd = (direction + d) % 4
+                    di, dj = deltas[nd]
+                    I, J = i + di, j + dj
+                    try:
+                        match path[I][J]:
+                            case "#":
+                                pass
+                            case _ if (I, J) in nodes:
+                                yield (I, J, nd), acc + 1
+                            case ".":
+                                yield from gen((I, J, nd, acc + 1))
+                    except IndexError:
+                        pass
+
+    distances = {}
+    for node in nodes:
+        distances[node] = [((i, j), c) for (i, j, _), c in gen(node)]
+
+    def build(s, dist):
+        if s not in dist:
+            return None
+        maximal = None
+        for i in range(len(dist[s])):
+            t, c = dist[s][i]
+            if t == end:
+                return c
+            exclude = [s, *[k for k, _ in dist[s]]]
+            ndist = {
+                k: [(tt, cc) for tt, cc in v if tt not in exclude]
+                for k, v in dist.items()
+            }
+            if (rem := build(t, ndist)) is not None:
+                if maximal is None:
+                    maximal = c + rem
+                else:
+                    maximal = max(maximal, c + rem)
+        return maximal
+
+    return build(start, distances)
 
 
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
-    print(f"{part2('test.txt')=}")
+    print(f"{part2('input.txt')=}")  # part2('input.txt')=6378
