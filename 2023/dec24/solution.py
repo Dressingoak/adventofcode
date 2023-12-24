@@ -51,5 +51,34 @@ def part1(file: str, least=200000000000000, most=400000000000000):
     return count
 
 
+def part2(file: str):
+    from sympy import solve, symbols
+
+    t1, t2, t3 = symbols("t1 t2 t3")
+    p1, p2, p3 = symbols("p1 p2 p3")
+    v1, v2, v3 = symbols("v1 v2 v3")
+
+    hailstorms = []
+    with open(file) as f:
+        for line in f:
+            p, v = line.strip().split("@")
+            hailstorms.append(
+                ([int(_) for _ in p.split(", ")], [int(_) for _ in v.split(", ")])
+            )
+
+    equations = []
+    for i in range(3):
+        for d in range(3):
+            equations.append(
+                hailstorms[i][0][d]
+                + eval(f"t{i+1}") * hailstorms[i][1][d]
+                - eval(f"p{d+1}")
+                - eval(f"t{i+1}") * eval(f"v{d+1}")
+            )
+    res = solve(equations, t1, t2, t3, p1, p2, p3, v1, v2, v3, dict=True)[0]
+    return res[p1] + res[p2] + res[p3]
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
