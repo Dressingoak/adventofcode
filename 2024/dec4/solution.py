@@ -38,11 +38,12 @@ def part2(file: str):
     for i in range(1, rows - 1):
         for j in range(1, cols - 1):
             if grid[i][j] == "A":
-                match [grid[i - 1][j - 1], grid[i + 1][j + 1]]:
-                    case ["M", "S"] | ["S", "M"]:
-                        match [grid[i - 1][j + 1], grid[i + 1][j - 1]]:
-                            case ["M", "S"] | ["S", "M"]:
-                                count += 1
+                match [
+                    [grid[i - 1][j - 1], grid[i + 1][j + 1]],
+                    [grid[i - 1][j + 1], grid[i + 1][j - 1]],
+                ]:
+                    case [["M", "S"] | ["S", "M"], ["M", "S"] | ["S", "M"]]:
+                        count += 1
     return count
 
 
