@@ -1,4 +1,4 @@
-def parse_and_sum(file: str, correct: bool):
+def parse(file: str):
     sum = 0
     parse_orderings = True
     page_orders = {}
@@ -7,6 +7,7 @@ def parse_and_sum(file: str, correct: bool):
             line = line.strip()
             if line == "":
                 parse_orderings = False
+                yield page_orders
                 continue
             if parse_orderings:
                 page, before = line.split("|")
@@ -16,43 +17,48 @@ def parse_and_sum(file: str, correct: bool):
                 else:
                     page_orders[page] = set([before])
             else:
-                pages = [int(_) for _ in line.split(",")]
-                n = len(pages)
-                if not correct:
-                    acceptable = True
-                    for i, page in enumerate(pages):
-                        if not all(
-                            page in page_orders and p in page_orders[page]
-                            for p in pages[i + 1 :]
-                        ):
-                            acceptable = False
-                            break
-                    if acceptable:
-                        sum += pages[len(pages) // 2]
-                else:
-                    acceptable = False
-                    corrected = False
-                    while not acceptable:
-                        for i in range(n - 1):
-                            a, b = pages[i], pages[i + 1]
-                            if a in page_orders and b in page_orders[a]:
-                                if i + 2 == n:
-                                    acceptable = True
-                            else:
-                                pages[i + 1], pages[i] = pages[i], pages[i + 1]
-                                corrected = True
-                                break
-                    if corrected:
-                        sum += pages[len(pages) // 2]
-    return sum
+                yield [int(_) for _ in line.split(",")]
 
 
 def part1(file: str):
-    return parse_and_sum(file, False)
+    sum = 0
+    iter = parse(file)
+    page_orders = next(iter)
+    for pages in iter:
+        n = len(pages)
+        acceptable = True
+        for i, page in enumerate(pages):
+            if not all(
+                page in page_orders and p in page_orders[page] for p in pages[i + 1 :]
+            ):
+                acceptable = False
+                break
+        if acceptable:
+            sum += pages[n // 2]
+    return sum
 
 
 def part2(file: str):
-    return parse_and_sum(file, True)
+    sum = 0
+    iter = parse(file)
+    page_orders = next(iter)
+    for pages in iter:
+        n = len(pages)
+        acceptable = False
+        corrected = False
+        while not acceptable:
+            for i in range(n - 1):
+                a, b = pages[i], pages[i + 1]
+                if a in page_orders and b in page_orders[a]:
+                    if i + 2 == n:
+                        acceptable = True
+                else:
+                    pages[i + 1], pages[i] = pages[i], pages[i + 1]
+                    corrected = True
+                    break
+        if corrected:
+            sum += pages[n // 2]
+    return sum
 
 
 if __name__ == "__main__":
