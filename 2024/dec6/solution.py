@@ -21,29 +21,30 @@ def part1(file: str):
             match dir:
                 case 0:  # left
                     for j in range(j, cols):
-                        visited.add((i, j))
                         if map[i][j + 1] == "#":
                             dir = 3
                             break
+                        visited.add((i, j))
                 case 1:  # up
                     for i in range(i, -1, -1):
-                        visited.add((i, j))
                         if map[i - 1][j] == "#":
                             dir = 0
                             break
+                        visited.add((i, j))
                 case 2:  # right
                     for j in range(j, -1, -1):
-                        visited.add((i, j))
                         if map[i][j - 1] == "#":
                             dir = 1
                             break
+                        visited.add((i, j))
                 case 3:  # down
                     for i in range(i, rows):
-                        visited.add((i, j))
                         if map[i + 1][j] == "#":
                             dir = 2
                             break
+                        visited.add((i, j))
         except IndexError:
+            visited.add((i, j))
             active = False
     return len(visited)
 
