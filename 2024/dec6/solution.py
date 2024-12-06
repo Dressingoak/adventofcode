@@ -76,8 +76,6 @@ def part2(file: str):
             loop = False
             active = True
             while active and not loop:
-                if i == 6 and j == 3:
-                    pass
                 try:
                     match dir:
                         case 0:  # right
