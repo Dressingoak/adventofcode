@@ -4,10 +4,8 @@ def pretty_print(files):
         digit, size, free, _, nxt = files[i]
         for _ in range(free):
             s += "."
-        s += "["
-        for _ in range(size):
-            s += f"{digit}"
-        s += "]"
+        # s += "[" + "|".join(str(digit) for _ in range(size)) + "]"
+        s += "".join(str(digit) for _ in range(size))
         if nxt is not None:
             i = nxt
         else:
@@ -53,10 +51,9 @@ def checksum(files):
     checksum = 0
     offset = 0
     for _, k, _ in iter_files(files, 0):
-        for i in range(offset, offset + files[k][1]):
-            # print(i, files[k][0])
+        for i in range(offset + files[k][2], offset + files[k][2] + files[k][1]):
             checksum += i * files[k][0]
-        offset += files[k][1]
+        offset += files[k][1] + files[k][2]
     return checksum
 
 
@@ -102,5 +99,41 @@ def part1(file: str):
     return checksum(files)
 
 
+def part2(file: str):
+    files = parse(file)
+    i = len(files) - 1
+    while True:
+        _, size, free, prv, nxt = files[i]
+        if prv is None:
+            break
+        for k_prv, k, _ in iter_files(files, 1):
+            if k == i:
+                if size <= free:
+                    # Move file as close to the left one as possible
+                    files[i][2] = 0
+                break
+            if size <= files[k][2]:
+                # Update the moved block's surroundings
+                files[prv][-1] = nxt
+                if nxt is not None:
+                    files[nxt][-2] = prv
+                    files[nxt][2] += size + free
+
+                # Move last file to the free space
+                files[k_prv][-1] = i
+                files[i][-2] = k_prv
+                files[i][-1] = k
+                files[k][-2] = i
+
+                # Adjust free space
+                files[k][2] -= size
+                files[i][2] = 0
+                break
+        i -= 1
+
+    return checksum(files)
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
