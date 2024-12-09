@@ -25,8 +25,7 @@ def iter_files(files, start):
             i = files[i][-1]
 
 
-def part1(file: str):
-    checksum = 0
+def parse(file: str):
     files = []  # linked list
     with open(file, "r") as f:
         free = 0
@@ -34,16 +33,40 @@ def part1(file: str):
             size = int(size)
             if pos % 2 == 0:
                 i = pos // 2  # will eventually point to the last file
-                files.append([i, size, free, i - 1, i + 1])
+                files.append(
+                    [
+                        i,  # ID number
+                        size,  # size
+                        free,  # free space before
+                        i - 1,  # previous block
+                        i + 1,  # next block
+                    ]
+                )
             else:
                 free = size
     files[0][-2] = None
     files[-1][-1] = None
+    return files
 
+
+def checksum(files):
+    checksum = 0
+    offset = 0
+    for _, k, _ in iter_files(files, 0):
+        for i in range(offset, offset + files[k][1]):
+            # print(i, files[k][0])
+            checksum += i * files[k][0]
+        offset += files[k][1]
+    return checksum
+
+
+def part1(file: str):
+    files = parse(file)
+    i = len(files) - 1
     k = 0
     completed = False
     while not completed:
-        _, size, free, prv, nxt = files[k]
+        _, _, free, prv, nxt = files[k]
         if nxt is None:
             completed = True
             files[k][2] = 0
@@ -76,14 +99,7 @@ def part1(file: str):
             files[i][1] -= free
             files[prv][-1] = j
 
-    offset = 0
-    for _, k, _ in iter_files(files, 0):
-        for i in range(offset, offset + files[k][1]):
-            # print(i, files[k][0])
-            checksum += i * files[k][0]
-        offset += files[k][1]
-
-    return checksum
+    return checksum(files)
 
 
 if __name__ == "__main__":
