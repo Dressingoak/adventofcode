@@ -59,7 +59,8 @@ def set_to_grid(points: set):
     return rows
 
 
-def iter_border(points):
+def count_sides(points):
+    sides = 0
     grid = set_to_grid(points)
     visited = set()
     for k in range(len(grid)):
@@ -116,14 +117,9 @@ def iter_border(points):
                             case (True, False, False, True):
                                 j -= i - path[-2][0]
                         shape = grid[i][j]
-                        yield ((i, j), changed, len(path) == 1)
+                        if changed:
+                            sides += 1
                     visited.update(path)
-
-
-def count_sides(points):
-    sides = 0
-    for _, changed, is_new in iter_border(points):
-        sides += changed
     return sides
 
 
