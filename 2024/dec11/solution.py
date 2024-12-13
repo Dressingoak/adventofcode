@@ -1,36 +1,37 @@
-def number_len(n):
+def number_len(n: int):
     if (m := n // 10) == 0:
         return 1
     return 1 + number_len(m)
 
 
-def count_stones(stone, remaining, known):
-    if remaining == 0:
-        return 1
-    if (stone, remaining) in known:
-        return known[(stone, remaining)]
+def blink(stone: int):
     if stone == 0:
-        value = count_stones(1, remaining - 1, known)
+        yield 1
     elif (l := number_len(stone)) % 2 == 0:
         m = 10 ** (l // 2)
-        a, b = stone // m, stone % m
-        value = count_stones(a, remaining - 1, known) + count_stones(
-            b, remaining - 1, known
-        )
+        yield stone // m
+        yield stone % m
     else:
-        value = count_stones(stone * 2024, remaining - 1, known)
-    known[(stone, remaining)] = value
-    return value
+        yield stone * 2024
+
+
+def count_stones(stones: dict[int, int]):
+    nxt = {}
+    for stone, count in stones.items():
+        for nxt_stone in blink(stone):
+            if nxt_stone not in nxt:
+                nxt[nxt_stone] = count
+            else:
+                nxt[nxt_stone] += count
+    return nxt
 
 
 def solve(file: str, n: int):
-    count = 0
     with open(file, "r") as f:
-        stones = [int(_) for _ in f.readline().split(" ")]
-    known = {}
-    for stone in stones:
-        count += count_stones(stone, n, known)
-    return count
+        stones = {int(_): 1 for _ in f.readline().split(" ")}
+    for _ in range(n):
+        stones = count_stones(stones)
+    return sum(count for count in stones.values())
 
 
 def part1(file: str):
