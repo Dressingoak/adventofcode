@@ -1,3 +1,11 @@
+def rot(dir):
+    return dir % 2 * (dir // 2 * 2 - 1)
+
+
+def direction_to_offset(dir):
+    return (rot(dir), rot((dir - 1) % 4))
+
+
 def part1(file: str):
     map = []
     with open(file, "r") as f:
@@ -15,8 +23,10 @@ def part1(file: str):
     rows, cols = len(map), len(map[0])
     visited = set()
     active = True
-    while active:
+    while not (i == 0 or i == rows -1) and not (j == 0 or j == cols-1):
+        if 
         try:
+
             match dir:
                 case 0:  # right
                     for j in range(j, cols):
