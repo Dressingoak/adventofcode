@@ -70,6 +70,21 @@ def a_star(gen, start, end_eval, heuristic):
     return current, cost_until[current]
 
 
+def dijkstra(gen, start):
+    Q = MinPriorityQueue()
+    dist = dict()
+    dist[start] = 0
+    Q.insert(start, 0)
+    while len(Q) > 0:
+        u, _ = Q.pop()
+        for v, x in gen(u):
+            alt = dist[u] + x
+            if v not in dist or alt < dist[v]:
+                dist[v] = alt
+                Q.insert(v, alt)
+    return dist
+
+
 def part1(file: str):
     map = []
     with open(file, "r") as f:
@@ -112,5 +127,64 @@ def part1(file: str):
     return cost
 
 
+def part2(file: str):
+    map = []
+    with open(file, "r") as f:
+        for i, line in enumerate(f.readlines()):
+            row = []
+            for j, v in enumerate(line.strip()):
+                if v == "#":
+                    row.append(False)
+                else:
+                    row.append(True)
+                if v == "S":
+                    start = (i, j, 0)
+                if v == "E":
+                    end = (i, j)
+            map.append(row)
+
+    def gen(pos):
+        i, j, d = pos
+        match d:
+            case 0:
+                di, dj = 0, 1
+            case 1:
+                di, dj = -1, 0
+            case 2:
+                di, dj = 0, -1
+            case 3:
+                di, dj = 1, 0
+        if map[(k := i + di)][(l := j + dj)]:
+            yield (k, l, d), 1
+        yield (i, j, (d - 1) % 4), 1000
+        yield (i, j, (d + 1) % 4), 1000
+
+    costs = dijkstra(gen, start)
+    min_cost = min(costs[(*end, d)] for d in range(4))
+    ends = [(*end, (d + 2) % 4) for d in range(4) if costs[(*end, d)] == min_cost]
+    for e in ends:
+        ret_costs = dijkstra(gen, e)
+        summed = {
+            pos: cost + ret_costs[(pos[0], pos[1], (pos[2] + 2) % 4)]
+            for pos, cost in costs.items()
+        }
+        stack = [start]
+        seen = set()
+        while len(stack) > 0:
+            pos = stack.pop()
+            seen.add(pos)
+            adjs = {}
+            for adj, _ in gen(pos):
+                if (c := summed[adj]) not in adjs:
+                    adjs[c] = [adj]
+                else:
+                    adjs[c].append(adj)
+            least = min(_ for _ in adjs.keys())
+            stack.extend(k for k in adjs[least] if k not in seen)
+
+    return len(set((i, j) for (i, j, _) in seen))
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
