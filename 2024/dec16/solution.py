@@ -85,7 +85,7 @@ def dijkstra(gen, start):
     return dist
 
 
-def part1(file: str):
+def parse(file: str):
     map = []
     with open(file, "r") as f:
         for i, line in enumerate(f.readlines()):
@@ -116,6 +116,12 @@ def part1(file: str):
             yield (k, l, d), 1
         yield (i, j, (d - 1) % 4), 1000
         yield (i, j, (d + 1) % 4), 1000
+
+    return gen, start, end
+
+
+def part1(file: str):
+    gen, start, end = parse(file)
 
     _, cost = a_star(
         gen,
@@ -128,45 +134,18 @@ def part1(file: str):
 
 
 def part2(file: str):
-    map = []
-    with open(file, "r") as f:
-        for i, line in enumerate(f.readlines()):
-            row = []
-            for j, v in enumerate(line.strip()):
-                if v == "#":
-                    row.append(False)
-                else:
-                    row.append(True)
-                if v == "S":
-                    start = (i, j, 0)
-                if v == "E":
-                    end = (i, j)
-            map.append(row)
+    gen, start, end = parse(file)
 
-    def gen(pos):
-        i, j, d = pos
-        match d:
-            case 0:
-                di, dj = 0, 1
-            case 1:
-                di, dj = -1, 0
-            case 2:
-                di, dj = 0, -1
-            case 3:
-                di, dj = 1, 0
-        if map[(k := i + di)][(l := j + dj)]:
-            yield (k, l, d), 1
-        yield (i, j, (d - 1) % 4), 1000
-        yield (i, j, (d + 1) % 4), 1000
-
-    costs = dijkstra(gen, start)
-    min_cost = min(costs[(*end, d)] for d in range(4))
-    ends = [(*end, (d + 2) % 4) for d in range(4) if costs[(*end, d)] == min_cost]
+    costs_forward = dijkstra(gen, start)
+    min_cost = min(costs_forward[(*end, d)] for d in range(4))
+    ends = [
+        (*end, (d + 2) % 4) for d in range(4) if costs_forward[(*end, d)] == min_cost
+    ]
     for e in ends:
-        ret_costs = dijkstra(gen, e)
+        costs_backwards = dijkstra(gen, e)
         summed = {
-            pos: cost + ret_costs[(pos[0], pos[1], (pos[2] + 2) % 4)]
-            for pos, cost in costs.items()
+            pos: cost + costs_backwards[(pos[0], pos[1], (pos[2] + 2) % 4)]
+            for pos, cost in costs_forward.items()
         }
         stack = [start]
         seen = set()
