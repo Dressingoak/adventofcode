@@ -32,7 +32,6 @@ def combo(registers, v):
 
 def calculate(registers: dict[str, int], program: list[int]):
     p = 0  # pointer
-    out = []
     while True:
         try:
             nxt = p + 2
@@ -51,31 +50,35 @@ def calculate(registers: dict[str, int], program: list[int]):
                 case 4:  # bxc
                     registers["B"] = registers["B"] ^ registers["C"]
                 case 5:  # out
-                    out.append(combo(registers, program[p + 1]) % 8)
+                    yield combo(registers, program[p + 1]) % 8
                 case _:
                     raise RuntimeError
             p = nxt
         except IndexError:
             break
 
-    return out
-
 
 def part1(file: str):
     registers, program = parse(file)
-    out = calculate(registers, program)
-    return ",".join([str(_) for _ in out])
+    prog = calculate(registers, program)
+    return ",".join([str(_) for _ in prog])
+
+
+def check(program: list[int], A: int = 0, i: int = 0):
+    if i == len(program):
+        yield A // 8
+    else:
+        for a in range(8):
+            registers = {"A": A + a, "B": 0, "C": 0}
+            x = next(calculate(registers, program))
+            if program[len(program) - i - 1] == x:
+                yield from check(program, (A + a) * 8, i + 1)
 
 
 def part2(file: str):
     _, program = parse(file)
-    a = 0
-    while True:
-        out = calculate({"A": a, "B": 0, "C": 0}, program)
-        if program == out:
-            break
-        a += 1
-    return a
+    A = next(check(program))
+    return A
 
 
 if __name__ == "__main__":
