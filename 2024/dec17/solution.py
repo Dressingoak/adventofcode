@@ -76,6 +76,10 @@ def check(program: list[int], A: int = 0, i: int = 0):
 
 
 def part2(file: str):
+    """Works only when:
+    * the program loops at the end to index 0
+    * the registers B and C are derived from A at every iteration, without any additional state
+    """
     _, program = parse(file)
     A = next(check(program))
     return A
