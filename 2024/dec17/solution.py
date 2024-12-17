@@ -56,17 +56,28 @@ def calculate(registers: dict[str, int], program: list[int]):
                     raise RuntimeError
             p = nxt
         except IndexError:
-            print()
             break
 
-    return registers, out
+    return out
 
 
 def part1(file: str):
     registers, program = parse(file)
-    _, out = calculate(registers, program)
+    out = calculate(registers, program)
     return ",".join([str(_) for _ in out])
+
+
+def part2(file: str):
+    _, program = parse(file)
+    a = 0
+    while True:
+        out = calculate({"A": a, "B": 0, "C": 0}, program)
+        if program == out:
+            break
+        a += 1
+    return a
 
 
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
