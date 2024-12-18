@@ -73,12 +73,14 @@ def a_star(gen, start, end_eval, heuristic):
 def solve(file: str, bounds: tuple[int, int], bytes: int):
     imax, jmax = bounds
     blocked = set()
+    last_coord = None
 
     with open(file, "r") as f:
         for idx, line in enumerate(f.readlines()):
             if idx < bytes:
                 i, j = line.split(",")
-                blocked.add((int(i), int(j)))
+                blocked.add(coord := (int(i), int(j)))
+                last_coord = coord
             else:
                 break
 
@@ -94,18 +96,29 @@ def solve(file: str, bounds: tuple[int, int], bytes: int):
             ):
                 yield ((k, l), 1)
 
-    (_, steps) = a_star(
+    (end, steps) = a_star(
         gen,
         (0, 0),
         lambda pos: pos[0] == imax and pos[1] == jmax,
         lambda pos: abs(imax - pos[0]) + abs(jmax - pos[1]),
     )
-    return steps
+    if end == bounds:
+        return steps, last_coord
+    else:
+        return (None, last_coord)
 
 
-def part1(file: str):
-    return solve(file, (70, 70), 1024)
+def part1(file: str, bounds=(70, 70), bytes=1024):
+    return solve(file, bounds, bytes)[0]
+
+
+def part2(file: str, bounds=(70, 70)):
+    byte = 0
+    while (res := solve(file, bounds, byte))[0] is not None:
+        byte += 1
+    return ",".join([str(_) for _ in res[1]])
 
 
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
