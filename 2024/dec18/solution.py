@@ -70,17 +70,15 @@ def a_star(gen, start, end_eval, heuristic):
     return current, cost_until[current]
 
 
-def solve(file: str, bounds: tuple[int, int], bytes: int):
+def part1(file: str, bounds: tuple[int, int] = (70, 70), bytes: int = 1024):
     imax, jmax = bounds
     blocked = set()
-    last_coord = None
 
     with open(file, "r") as f:
         for idx, line in enumerate(f.readlines()):
             if idx < bytes:
                 i, j = line.split(",")
-                blocked.add(coord := (int(i), int(j)))
-                last_coord = coord
+                blocked.add((int(i), int(j)))
             else:
                 break
 
@@ -103,20 +101,48 @@ def solve(file: str, bounds: tuple[int, int], bytes: int):
         lambda pos: abs(imax - pos[0]) + abs(jmax - pos[1]),
     )
     if end == bounds:
-        return steps, last_coord
+        return steps
     else:
-        return (None, last_coord)
+        return None
 
 
-def part1(file: str, bounds=(70, 70), bytes=1024):
-    return solve(file, bounds, bytes)[0]
+def part2(file: str, bounds: tuple[int, int] = (70, 70)):
+    imax, jmax = bounds
+    coordinates = []
 
+    with open(file, "r") as f:
+        for idx, line in enumerate(f.readlines()):
+            i, j = line.split(",")
+            blocked = set(coordinates[-1][0]) if idx > 0 else set()
+            blocked.add(last := (int(i), int(j)))
+            coordinates.append((blocked, last))
 
-def part2(file: str, bounds=(70, 70)):
-    byte = 0
-    while (res := solve(file, bounds, byte))[0] is not None:
-        byte += 1
-    return ",".join([str(_) for _ in res[1]])
+    def gen(pos):
+        i, j, level = pos
+        if (i, j) == (0, 0) and level > 0:
+            # Remove one coordinate by going down one level, costing at least what a solution up until a given byte would yield
+            yield ((i, j, level - 1), bounds[0] * bounds[1])
+        blocked = coordinates[level][0]
+        for di, dj in [(0, 1), (-1, 0), (0, -1), (1, 0)]:
+            if (
+                (k := i + di) >= 0
+                and k <= imax
+                and (l := j + dj) >= 0
+                and l <= jmax
+                and (k, l) not in blocked
+            ):
+                yield ((k, l, level), 1)
+
+    (_, steps) = a_star(
+        gen,
+        (0, 0, idx),
+        lambda pos: pos[0] == imax and pos[1] == jmax,
+        lambda pos: abs(imax - pos[0]) + abs(jmax - pos[1]),
+    )
+    level = bounds[0] * bounds[1]
+    idx = len(coordinates) - steps // level
+    coord = coordinates[idx][1]
+    return ",".join([str(_) for _ in coord])
 
 
 if __name__ == "__main__":
