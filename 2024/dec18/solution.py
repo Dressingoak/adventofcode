@@ -121,7 +121,7 @@ def part2(file: str, bounds: tuple[int, int] = (70, 70)):
         i, j, level = pos
         if (i, j) == (0, 0) and level > 0:
             # Remove one coordinate by going down one level, costing at least what a solution up until a given byte would yield
-            yield ((i, j, level - 1), bounds[0] * bounds[1])
+            yield ((i, j, level - 1), imax * jmax)
         blocked = coordinates[level][0]
         for di, dj in [(0, 1), (-1, 0), (0, -1), (1, 0)]:
             if (
@@ -139,7 +139,7 @@ def part2(file: str, bounds: tuple[int, int] = (70, 70)):
         lambda pos: pos[0] == imax and pos[1] == jmax,
         lambda pos: abs(imax - pos[0]) + abs(jmax - pos[1]),
     )
-    level = bounds[0] * bounds[1]
+    level = imax * jmax
     idx = len(coordinates) - steps // level
     coord = coordinates[idx][1]
     return ",".join([str(_) for _ in coord])
