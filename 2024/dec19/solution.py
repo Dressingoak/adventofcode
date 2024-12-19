@@ -1,3 +1,20 @@
+def parse(file: str):
+    designs = []
+
+    with open(file, "r") as f:
+        parse_designs = False
+        for line in f.readlines():
+            line = line.strip()
+            if line == "":
+                parse_designs = True
+                continue
+            if parse_designs:
+                designs.append(line)
+            else:
+                towels = line.split(", ")
+    return towels, designs
+
+
 def find_design(design: str, towels: list[str], known: dict[str, int]):
     if design in known:
         return known[design]
@@ -14,27 +31,18 @@ def find_design(design: str, towels: list[str], known: dict[str, int]):
 
 
 def part1(file: str):
-    designs = []
-
-    with open(file, "r") as f:
-        parse_designs = False
-        for line in f.readlines():
-            line = line.strip()
-            if line == "":
-                parse_designs = True
-                continue
-            if parse_designs:
-                designs.append(line)
-            else:
-                towels = line.split(", ")
+    towels, designs = parse(file)
 
     known = {}
-    count = 0
-    for i, design in enumerate(designs):
-        if find_design(design, towels, known) > 0:
-            count += 1
-    return count
+    return sum(find_design(design, towels, known) > 0 for design in designs)
+
+
+def part2(file: str):
+    towels, designs = parse(file)
+    known = {}
+    return sum(find_design(design, towels, known) for design in designs)
 
 
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
