@@ -54,25 +54,23 @@ class MinPriorityQueue:
             return None
 
 
-def a_star(gen, start, end_eval, heuristic):
-    open_set = MinPriorityQueue()
-    open_set.insert(start, 0)
-    cost_until = {start: 0}
-    while len(open_set) > 0:
-        current, _ = open_set.pop()
-        if end_eval(current):
-            break
-        for neighbor, cost in gen(current):
-            neighbor_cost = cost_until[current] + cost
-            if neighbor not in cost_until or neighbor_cost < cost_until[neighbor]:
-                cost_until[neighbor] = neighbor_cost
-                open_set.insert(neighbor, neighbor_cost + heuristic(neighbor))
-    return current, cost_until[current]
+def dijkstra(gen, start):
+    Q = MinPriorityQueue()
+    dist = dict()
+    dist[start] = 0
+    Q.insert(start, 0)
+    while len(Q) > 0:
+        u, _ = Q.pop()
+        for v, x in gen(u):
+            alt = dist[u] + x
+            if v not in dist or alt < dist[v]:
+                dist[v] = alt
+                Q.insert(v, alt)
+    return dist
 
 
-def part1(file: str):
+def solve(file: str, dist: int):
     map = []
-
     with open(file, "r") as f:
         for i, line in enumerate(f.readlines()):
             row = []
@@ -103,46 +101,26 @@ def part1(file: str):
             ):
                 yield ((k, l), 1)
 
+    start_to_any = dijkstra(gen, start)
+    end_to_any = dijkstra(gen, end)
+    best = start_to_any[end]
+
     steps = {}
 
-    _, best = a_star(
-        gen,
-        start,
-        lambda pos: pos == end,
-        lambda pos: abs(pos[0] - end[0]) + abs(pos[1] - end[1]),
-    )
+    for (i, j), c1 in start_to_any.items():
+        for (k, l), c2 in end_to_any.items():
+            if (s := abs(i - k) + abs(j - l)) <= dist:
+                if (t := best - (c1 + s + c2)) not in steps:
+                    steps[t] = 1
+                else:
+                    steps[t] += 1
+    for a, b in sorted((a, b) for a, b in steps.items()):
+        print(f"There are {b} cheats that save {a} picoseconds.")
+    return steps
 
-    for i in range(rows):
-        for j in range(cols):
-            if not map[i][j]:
-                continue
-            for di, dj in [(0, 1), (1, 0)]:
-                if (
-                    (k := i + 2 * di) >= 0
-                    and (l := j + 2 * dj) >= 0
-                    and k < rows
-                    and l < cols
-                    and not map[i + di][j + dj]
-                    and map[k][l]
-                ):
-                    k, l = i + di, j + dj
-                    map[k][l] = True
-                    _, s = a_star(
-                        gen,
-                        start,
-                        lambda pos: pos == end,
-                        lambda pos: abs(pos[0] - end[0]) + abs(pos[1] - end[1]),
-                    )
-                    if (t := best - s) not in steps:
-                        steps[t] = 1
-                    else:
-                        steps[t] += 1
-                    map[k][l] = False
-    #         progress = (i * cols + (j + 1)) / (rows * cols) * 100
-    #         print(f"{progress:.2f} % ({i=}, {j=})")
-    # for a, b in sorted((a, b) for a, b in steps.items()):
-    #     print(f"There are {b} cheats that save {a} picoseconds.")
 
+def part1(file: str):
+    steps = solve(file, 2)
     return sum(b for a, b in steps.items() if a >= 100)
 
 
