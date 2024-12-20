@@ -124,5 +124,11 @@ def part1(file: str):
     return sum(b for a, b in steps.items() if a >= 100)
 
 
+def part2(file: str):
+    steps = solve(file, 20)
+    return sum(b for a, b in steps.items() if a >= 100)
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
