@@ -22,58 +22,38 @@ def part1(file: str):
             n = int(line.strip())
             for i, s in enumerate(draw(n)):
                 if i == 2000:
-                    # print(f"{n}: {s}")
                     sum += s
                     break
     return sum
 
 
-def price(n):
-    prev = None
-    for s in draw(n):
-        m = s % 10
-        yield m, (m - prev if prev is not None else None)
-        prev = m
-
-
-def anticipate(n, seq):
-    l4, l3, l2, l1 = None, None, None, None
-    for i, (p, d) in enumerate(price(n)):
-        if i == 2000:
-            return None
-        l4, l3, l2, l1 = l3, l2, l1, d
-        if (l4, l3, l2, l1) == seq:
-            return p
-
-
-def seqs(base, offset):
-    for i in range(base**4):
-        l4 = (i // base**3) % base - offset
-        l3 = (i // base**2) % base - offset
-        l2 = (i // base**1) % base - offset
-        l1 = (i // base**0) % base - offset
-        yield (l4, l3, l2, l1)
-
-
 def part2(file: str):
-    max = 0
-    best = None
-    secrets = []
+    all_seqs = {}
     with open(file, "r") as f:
         for line in f.readlines():
-            secrets.append(int(line.strip()))
-    for seq in seqs(19, 9):
-        sum = 0
-        for n in secrets:
-            price = anticipate(n, seq)
-            if price is not None:
-                sum += price
-        if sum > max:
-            max = sum
-            best = seq
-            print(seq, sum)
-    print(max, best)
-    return max
+            n = int(line.strip())
+            prices = []
+            for i, s in enumerate(draw(n)):
+                if i == 2000:
+                    break
+                prices.append(s % 10)
+            seqs = set()
+            for i in range(4, 2000):
+                seq = (
+                    prices[i - 3] - prices[i - 4],
+                    prices[i - 2] - prices[i - 3],
+                    prices[i - 1] - prices[i - 2],
+                    prices[i] - prices[i - 1],
+                )
+                if seq not in seqs:
+                    seqs.add(seq)
+                    if seq not in all_seqs:
+                        all_seqs[seq] = prices[i]
+                    else:
+                        all_seqs[seq] += prices[i]
+    best = max(all_seqs, key=all_seqs.get)
+    print(f"Best sequence: {best}")
+    return all_seqs[best]
 
 
 if __name__ == "__main__":
