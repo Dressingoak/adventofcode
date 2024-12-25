@@ -1,3 +1,130 @@
+class MinPriorityQueue:
+    def __init__(self) -> None:
+        self.keys = dict()
+        self.data = []
+
+    def __len__(self):
+        return len(self.data)
+
+    def swap(self, i, j):
+        self.keys[self.data[i][0]], self.keys[self.data[j][0]] = j, i
+        self.data[i], self.data[j] = self.data[j], self.data[i]
+
+    def sift_up(self, i):
+        if i == 0:
+            return
+        j = (i - 1) // 2
+        match [self.data[i][1], self.data[j][1]]:
+            case [None, x]:
+                return
+            case [x, y] if y is None or x < y:
+                self.swap(i, j)
+                self.sift_up(j)
+
+    def sift_down(self, i):
+        children = [
+            j
+            for j in [2 * i + 1, 2 * i + 2]
+            if j < len(self.data) and self.data[j][1] is not None
+        ]
+        if len(children) > 0:
+            j = min(children, key=lambda k: self.data[k][1])
+            if self.data[i][1] is None or self.data[j][1] < self.data[i][1]:
+                self.swap(i, j)
+                self.sift_down(j)
+
+    def insert(self, key, value) -> None:
+        if key in self.keys:
+            i = self.keys[key]
+            self.data[i] = (key, value)
+        else:
+            i = len(self.data)
+            self.data.append((key, value))
+            self.keys[key] = i
+        self.sift_up(i)
+
+    def pop(self):
+        if len(self.data) > 0:
+            self.swap(0, len(self.data) - 1)
+            key, value = self.data.pop()
+            self.sift_down(0)
+            del self.keys[key]
+            return (key, value)
+        else:
+            return None
+
+
+def a_star(gen, start, end_eval, heuristic):
+    open_set = MinPriorityQueue()
+    open_set.insert(start, 0)
+    cost_until = {start: 0}
+    while len(open_set) > 0:
+        current, _ = open_set.pop()
+        if end_eval(current):
+            break
+        for neighbor, cost in gen(current):
+            neighbor_cost = cost_until[current] + cost
+            if neighbor not in cost_until or neighbor_cost < cost_until[neighbor]:
+                cost_until[neighbor] = neighbor_cost
+                open_set.insert(neighbor, neighbor_cost + heuristic(neighbor))
+    return current, cost_until[current]
+
+
+def dijkstra(gen, start):
+    Q = MinPriorityQueue()
+    dist = dict()
+    dist[start] = 0
+    Q.insert(start, 0)
+    while len(Q) > 0:
+        u, _ = Q.pop()
+        for v, x in gen(u):
+            alt = dist[u] + x
+            if v not in dist or alt < dist[v]:
+                dist[v] = alt
+                Q.insert(v, alt)
+    return dist
+
+
+directional_positions = {
+    "<": (1, 0),
+    "v": (1, 1),
+    ">": (1, 2),
+    "^": (0, 1),
+    "A": (0, 2),
+}
+
+
+directional_positions_rev = {v: k for k, v in directional_positions.items()}
+
+
+def cost_directional(start: str, end: str, level: int, known: dict):
+    if level == 0:
+        return 1
+    if (mem := (start, end, level)) in known:
+        return known[mem]
+
+    def gen(pos):
+        cur, inner = pos
+        i, j = directional_positions[cur]
+        for di, dj, dir in [(0, 1, ">"), (-1, 0, "^"), (0, -1, "<"), (1, 0, "v")]:
+            if (k := i + di, l := j + dj) in directional_positions_rev:
+                nxt = directional_positions_rev[(k, l)]
+                cost = cost_directional(inner, dir, level - 1, known)
+                yield (nxt, dir), cost
+
+    all_cost = dijkstra(gen, (start, "A"))
+    if level == 1:
+        pass
+        # print(all_cost)
+    res = min(
+        c + cost_directional(k[1], "A", level - 1, known)
+        for k, c in all_cost.items()
+        if k[0] == end
+    )
+    known[mem] = res
+    return res
+
+
 numeric_positions = {
     "A": (3, 2),
     "0": (3, 1),
@@ -11,144 +138,77 @@ numeric_positions = {
     "8": (0, 1),
     "9": (0, 2),
 }
+"""Layout:
+```
++---+---+---+
+| 7 | 8 | 9 |
++---+---+---+
+| 4 | 5 | 6 |
++---+---+---+
+| 1 | 2 | 3 |
++---+---+---+
+    | 0 | A |
+    +---+---+
+```
+"""
 
 numeric_positions_rev = {v: k for k, v in numeric_positions.items()}
 
 
-def keypad_numeric(current, target, acc=""):
-    """
-    +---+---+---+
-    | 7 | 8 | 9 |
-    +---+---+---+
-    | 4 | 5 | 6 |
-    +---+---+---+
-    | 1 | 2 | 3 |
-    +---+---+---+
-        | 0 | A |
-        +---+---+
-    """
-    if current == target:
-        yield acc + "A"
-    else:
-        (i, j) = numeric_positions[current]
-        (k, l) = numeric_positions[target]
-        n = 0 if (k - i) == 0 else (k - i) // abs(k - i)
-        m = 0 if (l - j) == 0 else (l - j) // abs(l - j)
-        if len(acc) == 0:
-            ordered = [0, 1]
-        else:
-            match acc[-1]:
-                case "<" | ">":
-                    ordered = [0, 1]
-                case "v" | "^":
-                    ordered = [1, 0]
-        while len(ordered) > 0:
-            o = ordered.pop()
-            match o:
-                case 0:
-                    if n != 0 and not (i + n == 3 and j == 0):
-                        yield from keypad_numeric(
-                            numeric_positions_rev[(i + n, j)],
-                            target,
-                            acc + ("v" if n == 1 else "^"),
-                        )
-                case 1:
-                    if m != 0 and not (i == 3 and j + m == 0):
-                        yield from keypad_numeric(
-                            numeric_positions_rev[(i, j + m)],
-                            target,
-                            acc + (">" if m == 1 else "<"),
-                        )
+def steps(
+    start: str, end: str, level: int, known_directional: dict, known_numeric: dict
+):
+    if (mem := (start, end, level)) in known_numeric:
+        return known_numeric[mem]
+
+    def gen(pos):
+        cur, inner = pos
+        i, j = numeric_positions[cur]
+        for di, dj, dir in [(0, 1, ">"), (-1, 0, "^"), (0, -1, "<"), (1, 0, "v")]:
+            if (k := i + di, l := j + dj) in numeric_positions_rev:
+                nxt = numeric_positions_rev[(k, l)]
+                cost = cost_directional(inner, dir, level - 1, known_directional)
+                yield (nxt, dir), cost
+
+    all_cost = dijkstra(gen, (start, "A"))
+    if level == 1:
+        pass
+        # print(all_cost)
+    res = min(
+        c + cost_directional(k[1], "A", level - 1, known_directional)
+        for k, c in all_cost.items()
+        if k[0] == end
+    )
+    known_numeric[mem] = res
+    return res
 
 
-directional_positions = {
-    "<": (1, 0),
-    "v": (1, 1),
-    ">": (1, 2),
-    "^": (0, 1),
-    "A": (0, 2),
-}
-
-directional_positions_rev = {v: k for k, v in directional_positions.items()}
-
-
-def keypad_directional(current, target, acc=""):
-    """
-        +---+---+
-        | ^ | A |
-    +---+---+---+
-    | < | v | > |
-    +---+---+---+
-    """
-    if current == target:
-        yield acc + "A"
-    else:
-        (i, j) = directional_positions[current]
-        (k, l) = directional_positions[target]
-        n = 0 if (k - i) == 0 else (k - i) // abs(k - i)
-        m = 0 if (l - j) == 0 else (l - j) // abs(l - j)
-        if len(acc) == 0:
-            ordered = [0, 1]
-        else:
-            match acc[-1]:
-                case "<" | ">":
-                    ordered = [0, 1]
-                case "v" | "^":
-                    ordered = [1, 0]
-        while len(ordered) > 0:
-            o = ordered.pop()
-            match o:
-                case 0:
-                    if n != 0 and not (i + n == 0 and j == 0):
-                        yield from keypad_directional(
-                            directional_positions_rev[(i + n, j)],
-                            target,
-                            acc + ("v" if n == 1 else "^"),
-                        )
-                case 1:
-                    if m != 0 and not (i == 0 and j + m == 0):
-                        yield from keypad_directional(
-                            directional_positions_rev[(i, j + m)],
-                            target,
-                            acc + (">" if m == 1 else "<"),
-                        )
-
-
-def push_code(keypad, code: str, current: str = "A", acc: str = ""):
-    if code == "":
-        yield acc
-    else:
-        for instructions in keypad(current, code[0]):
-            yield from push_code(keypad, code[1:], code[0], acc + instructions)
-
-
-def changes(seq: str) -> int:
-    n = 0
-    last = None
-    for char in seq:
-        if last == None or char != last:
-            last = char
-            n += 1
-    return n
-
-
-def part1(file: str):
+def solve(file: str, robots: int):
     complexity = 0
-    keypads = [keypad_numeric, keypad_directional, keypad_directional]
+    known_numeric = {}
+    known_directional = {}
     with open(file, "r") as f:
         for line in f.readlines():
             code = line.strip()
             number = int(code[:-1])
-            for keypad in keypads:
-                code = min(
-                    (c for c in push_code(keypad, code)),
-                    key=lambda seq: (len(seq), changes(seq)),
+            length = 0
+            for i in range(len(code)):
+                length += steps(
+                    code[i - 1], code[i], robots + 1, known_directional, known_numeric
                 )
-            length = len(code)
-            print(f"{line.strip()}: {code} ({length})")
+            print(f"{line.strip()}: {length}")
             complexity += length * number
     return complexity
 
 
+def part1(file: str):
+    return solve(file, 2)
+
+
+def part2(file: str):
+    return solve(file, 25)
+
+
 if __name__ == "__main__":
     print(f"{part1('input.txt')=}")
+    print(f"{part2('input.txt')=}")
