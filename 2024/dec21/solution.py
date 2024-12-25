@@ -54,22 +54,6 @@ class MinPriorityQueue:
             return None
 
 
-def a_star(gen, start, end_eval, heuristic):
-    open_set = MinPriorityQueue()
-    open_set.insert(start, 0)
-    cost_until = {start: 0}
-    while len(open_set) > 0:
-        current, _ = open_set.pop()
-        if end_eval(current):
-            break
-        for neighbor, cost in gen(current):
-            neighbor_cost = cost_until[current] + cost
-            if neighbor not in cost_until or neighbor_cost < cost_until[neighbor]:
-                cost_until[neighbor] = neighbor_cost
-                open_set.insert(neighbor, neighbor_cost + heuristic(neighbor))
-    return current, cost_until[current]
-
-
 def dijkstra(gen, start):
     Q = MinPriorityQueue()
     dist = dict()
@@ -92,38 +76,17 @@ directional_positions = {
     "^": (0, 1),
     "A": (0, 2),
 }
-
+"""Layout:
+```
+    +---+---+
+    | ^ | A |
++---+---+---+
+| < | v | > |
++---+---+---+
+```
+"""
 
 directional_positions_rev = {v: k for k, v in directional_positions.items()}
-
-
-def cost_directional(start: str, end: str, level: int, known: dict):
-    if level == 0:
-        return 1
-    if (mem := (start, end, level)) in known:
-        return known[mem]
-
-    def gen(pos):
-        cur, inner = pos
-        i, j = directional_positions[cur]
-        for di, dj, dir in [(0, 1, ">"), (-1, 0, "^"), (0, -1, "<"), (1, 0, "v")]:
-            if (k := i + di, l := j + dj) in directional_positions_rev:
-                nxt = directional_positions_rev[(k, l)]
-                cost = cost_directional(inner, dir, level - 1, known)
-                yield (nxt, dir), cost
-
-    all_cost = dijkstra(gen, (start, "A"))
-    if level == 1:
-        pass
-        # print(all_cost)
-    res = min(
-        c + cost_directional(k[1], "A", level - 1, known)
-        for k, c in all_cost.items()
-        if k[0] == end
-    )
-    known[mem] = res
-    return res
-
 
 numeric_positions = {
     "A": (3, 2),
@@ -155,38 +118,42 @@ numeric_positions = {
 numeric_positions_rev = {v: k for k, v in numeric_positions.items()}
 
 
-def steps(
-    start: str, end: str, level: int, known_directional: dict, known_numeric: dict
-):
-    if (mem := (start, end, level)) in known_numeric:
-        return known_numeric[mem]
+def steps(start: str, end: str, top: bool, level: int, known: dict, known_paths: dict):
+    if level == 0:
+        return 1
+    if (mem := (start, end, level)) in known:
+        return known[mem]
 
-    def gen(pos):
-        cur, inner = pos
-        i, j = numeric_positions[cur]
-        for di, dj, dir in [(0, 1, ">"), (-1, 0, "^"), (0, -1, "<"), (1, 0, "v")]:
-            if (k := i + di, l := j + dj) in numeric_positions_rev:
-                nxt = numeric_positions_rev[(k, l)]
-                cost = cost_directional(inner, dir, level - 1, known_directional)
-                yield (nxt, dir), cost
+    if (mem2 := (level, path_start := (start, "A"))) not in known_paths:
+        table = directional_positions if not top else numeric_positions
+        table_rev = directional_positions_rev if not top else numeric_positions_rev
 
-    all_cost = dijkstra(gen, (start, "A"))
-    if level == 1:
-        pass
-        # print(all_cost)
+        def gen(pos):
+            cur, inner = pos
+            i, j = table[cur]
+            for di, dj, dir in [(0, 1, ">"), (-1, 0, "^"), (0, -1, "<"), (1, 0, "v")]:
+                if (k := i + di, l := j + dj) in table_rev:
+                    nxt = table_rev[(k, l)]
+                    cost = steps(inner, dir, False, level - 1, known, known_paths)
+                    yield (nxt, dir), cost
+
+        all_cost = dijkstra(gen, path_start)
+        known_paths[mem2] = all_cost
+    else:
+        all_cost = known_paths[mem2]
     res = min(
-        c + cost_directional(k[1], "A", level - 1, known_directional)
+        c + steps(k[1], "A", False, level - 1, known, known_paths)
         for k, c in all_cost.items()
         if k[0] == end
     )
-    known_numeric[mem] = res
+    known[mem] = res
     return res
 
 
 def solve(file: str, robots: int):
     complexity = 0
-    known_numeric = {}
-    known_directional = {}
+    known = {}
+    known_paths = {}
     with open(file, "r") as f:
         for line in f.readlines():
             code = line.strip()
@@ -194,9 +161,14 @@ def solve(file: str, robots: int):
             length = 0
             for i in range(len(code)):
                 length += steps(
-                    code[i - 1], code[i], robots + 1, known_directional, known_numeric
+                    code[i - 1],
+                    code[i],
+                    True,
+                    robots + 1,
+                    known,
+                    known_paths,
                 )
-            print(f"{line.strip()}: {length}")
+            # print(f"{line.strip()}: {length}")
             complexity += length * number
     return complexity
 
