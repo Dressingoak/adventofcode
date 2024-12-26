@@ -69,7 +69,15 @@ def dijkstra(gen, start):
     return dist
 
 
-def solve(file: str, dist: int):
+def iter_points(center: tuple[int, int], radius: int):
+    i, j = center
+    for k in range(-radius, radius + 1):
+        width = radius - abs(k)
+        for l in range(-width, width + 1):
+            yield (i + k, j + l)
+
+
+def solve(file: str, dist: int, save: int):
     map = []
     with open(file, "r") as f:
         for i, line in enumerate(f.readlines()):
@@ -101,32 +109,26 @@ def solve(file: str, dist: int):
             ):
                 yield ((k, l), 1)
 
-    start_to_any = dijkstra(gen, start)
     end_to_any = dijkstra(gen, end)
-    best = start_to_any[end]
+    best = end_to_any[start]
 
-    steps = {}
-
-    for (i, j), c1 in start_to_any.items():
-        for (k, l), c2 in end_to_any.items():
-            if (s := abs(i - k) + abs(j - l)) <= dist:
-                if (t := best - (c1 + s + c2)) not in steps:
-                    steps[t] = 1
-                else:
-                    steps[t] += 1
-    for a, b in sorted((a, b) for a, b in steps.items()):
-        print(f"There are {b} cheats that save {a} picoseconds.")
-    return steps
+    count = 0
+    for (i, j), c1 in end_to_any.items():
+        for k, l in iter_points((i, j), dist):
+            if (c2 := end_to_any.get((k, l))) is not None:
+                s = abs(i - k) + abs(j - l)
+                t = best - (c2 + s + (best - c1))
+                if t >= save:
+                    count += 1
+    return count
 
 
 def part1(file: str):
-    steps = solve(file, 2)
-    return sum(b for a, b in steps.items() if a >= 100)
+    return solve(file, 2, 100)
 
 
 def part2(file: str):
-    steps = solve(file, 20)
-    return sum(b for a, b in steps.items() if a >= 100)
+    return solve(file, 20, 100)
 
 
 if __name__ == "__main__":
