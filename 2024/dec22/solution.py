@@ -52,7 +52,7 @@ def part2(file: str):
                     else:
                         all_seqs[seq] += prices[i]
     best = max(all_seqs, key=all_seqs.get)
-    print(f"Best sequence: {best}")
+    # print(f"Best sequence: {best}")
     return all_seqs[best]
 
 
