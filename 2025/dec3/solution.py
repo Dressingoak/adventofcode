@@ -17,7 +17,12 @@ def part1(file: str):
     return sum
 
 
+mem = {}
+
+
 def maximizer(a, lst, m):
+    if (v := mem.get((a, lst, m))) is not None:
+        return v
     if m == 0:
         return a
     if (n := len(lst)) < m:
@@ -33,14 +38,15 @@ def maximizer(a, lst, m):
                     m - 1,
                 )
             )
-    return max(x)
+    mem[(a, lst, m)] = (ret := max(x))
+    return ret
 
 
 def part2(file: str):
     sum = 0
     with open(file, "r") as f:
         for line in f.readlines():
-            joltages = [int(_) for _ in line.strip()]
+            joltages = tuple(int(_) for _ in line.strip())
             sum += maximizer(None, joltages, 12)
     return sum
 
