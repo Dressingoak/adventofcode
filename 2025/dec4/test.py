@@ -1,10 +1,15 @@
 import unittest
-from solution import part1
+from solution import part1, part2
 
 
 class TestDec4(unittest.TestCase):
     def test_part1(self):
         self.assertEqual(part1("test.txt"), 13)
+
+
+class TestDec4(unittest.TestCase):
+    def test_partw(self):
+        self.assertEqual(part2("test.txt"), 43)
 
 
 if __name__ == "__main__":
