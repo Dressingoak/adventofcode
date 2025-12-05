@@ -6,9 +6,7 @@ class TestDec3(unittest.TestCase):
     def test_part1(self):
         self.assertEqual(part1("test.txt"), 357)
 
-
-class TestDec3(unittest.TestCase):
-    def test_part1(self):
+    def test_part2(self):
         self.assertEqual(part2("test.txt"), 3121910778619)
 
 
