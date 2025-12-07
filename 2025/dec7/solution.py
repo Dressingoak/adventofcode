@@ -19,39 +19,33 @@ def part1(file: str):
     return splits
 
 
-timelines = {}
-
-
-def paths(i: int, j: int, beams: dict[int, set[int]]):
-    if (p := timelines.get((i, j))) is not None:
-        return p
-    if i in beams and j in beams[i]:
-        timelines[(i, j)] = (
-            p := (paths(i + 1, j - 1, beams) + paths(i + 1, j + 1, beams))
-        )
-        return p
-    elif i > max(beams.keys()):
-        timelines[(i, j)] = 1
-        return 1
-    else:
-        timelines[(i, j)] = (p := paths(i + 1, j, beams))
-        return p
-
-
 def part2(file: str):
     beams = {}
     with open(file, "r") as f:
-        for i, line in enumerate(f.readlines()):
-            for j, char in enumerate(line.strip()):
+        for line in f.readlines():
+            beams_next = {}
+            for i, char in enumerate(line.strip()):
                 match char:
                     case "S":
-                        start = (i, j)
+                        beams_next[i] = 1
                     case "^":
                         if i in beams:
-                            beams[i].add(j)
-                        else:
-                            beams[i] = set((j,))
-    return paths(*start, beams)
+                            if i - 1 in beams_next:
+                                beams_next[i - 1] += beams[i]
+                            else:
+                                beams_next[i - 1] = beams[i]
+                            if i + 1 in beams_next:
+                                beams_next[i + 1] += beams[i]
+                            else:
+                                beams_next[i + 1] = beams[i]
+                    case ".":
+                        if i in beams:
+                            if i in beams_next:
+                                beams_next[i] += beams[i]
+                            else:
+                                beams_next[i] = beams[i]
+            beams = beams_next
+    return sum(beams.values())
 
 
 if __name__ == "__main__":
