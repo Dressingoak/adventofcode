@@ -25,7 +25,12 @@ def shoelace(points):
     return shoelace // 2
 
 
-def from_file_centers_to_corners(points):
+def tiles_to_outline(points):
+    """Generate the points making up the outline of tiles, i.e. determine the correct corners of the tiles for the path
+
+    For example, `[(3, 3), (3, 4), (4, 4), (4, 3)]` is a negatively oriented polygon with outline `[(3, 3), (3, 5), (5, 5), (5, 3)]`.
+
+    Determining corners requires us to find the winding of the path."""
     orientation = shoelace(points) > 0
     p = points if orientation else list(reversed(points))
     x0, y0 = p[-1]
@@ -71,7 +76,7 @@ def part2(file: str):
                 (int(x), -int(y))
             )  # Mirror y to get correct orientations for the shape
     n = len(tiles)
-    corners = from_file_centers_to_corners(tiles)
+    outline = tiles_to_outline(tiles)
     largest = 0
     for i in range(n):
         x1, y1 = tiles[i]
@@ -81,10 +86,12 @@ def part2(file: str):
             if size > largest:
                 xl, xh = min(x1, x2), max(x1, x2) + 1
                 yl, yh = min(y1, y2), max(y1, y2) + 1
-                truncated = [
-                    (max(min(x, xh), xl), max(min(y, yh), yl)) for (x, y) in corners
+                # Clamp the outline to the region of the rectangle
+                # The area is always <= area of the rectangle since a lot of the swept out path have zero area
+                clamped_outline = [
+                    (max(min(x, xh), xl), max(min(y, yh), yl)) for (x, y) in outline
                 ]
-                if shoelace(truncated) == size:
+                if shoelace(clamped_outline) == size:
                     largest = size
     return largest
 
