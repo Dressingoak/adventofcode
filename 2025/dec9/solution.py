@@ -1,4 +1,4 @@
-def part1(file: str, connections: int = 1000):
+def part1(file: str):
     tiles = []
     with open(file, "r") as f:
         for line in f.readlines():
