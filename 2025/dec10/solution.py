@@ -96,7 +96,7 @@ def part1(file: str):
 def part2(file: str):
     import numpy as np
     from scipy import optimize
-    
+
     total = 0
     button_rules = []
     joltage_requirements = []
@@ -118,8 +118,12 @@ def part2(file: str):
         A = np.array(A, dtype=np.int32)
         c = np.ones(len(buttons), dtype=np.int32)
         b = np.array(joltages, dtype=np.int32)
-    
-        total += int(optimize.linprog(c=c, A_eq=A, b_eq=b, integrality=1).x.sum().astype(np.int32))
+
+        total += int(
+            optimize.linprog(c=c, A_eq=A, b_eq=b, integrality=1)
+            .x.sum()
+            .astype(np.int32)
+        )
 
     return total
 
