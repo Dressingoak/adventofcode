@@ -60,7 +60,7 @@ where
     arr
 }
 
-fn wrapping_paper(sides: [u32; 3]) -> u32 {
+fn p1(sides: [u32; 3]) -> u32 {
     let s1 = sides[0] * sides[1];
     let s2 = sides[0] * sides[2];
     let smallest = if s1 < s2 { s1 } else { s2 };
@@ -69,20 +69,27 @@ fn wrapping_paper(sides: [u32; 3]) -> u32 {
     2 * s1 + 2 * s2 + 2 * s3 + smallest
 }
 
-fn p1(data: &str) -> Result<u32> {
-    let iter = data.split('x').map(|n| n.parse::<u32>());
-    let sides: [u32; 3] = iter_result_to_array(iter)?;
-    Ok(wrapping_paper(sides))
+fn p2(sides: [u32; 3]) -> u32 {
+    let mut sides = sides;
+    sides.sort();
+    let length = 2 * sides[0] + 2 * sides[1];
+    let ribbon = sides[0] * sides[1] * sides[2];
+    length + ribbon
 }
 
 fn main() -> Result<()> {
     let filename = env::args().nth(1).expect("Filename should be set");
-    let mut sum = 0;
+    let mut sum_p1 = 0;
+    let mut sum_p2 = 0;
     for line in read_lines(&filename)? {
-        let wp = p1(&line?)?;
-        sum += wp;
+        let data = line?;
+        let iter = data.split('x').map(|n| n.parse::<u32>());
+        let sides: [u32; 3] = iter_result_to_array(iter)?;
+        sum_p1 += p1(sides);
+        sum_p2 += p2(sides);
     }
-    println!("Dec 1, part 1: {}", sum);
+    println!("Dec 2, part 1: {}", sum_p1);
+    println!("Dec 2, part 2: {}", sum_p2);
     Ok(())
 }
 
@@ -91,8 +98,23 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_iter_result_to_array() {
+        let iter1 = "2x3x4".split('x').map(|n| n.parse::<u32>());
+        assert_eq!([2, 3, 4], iter_result_to_array(iter1).unwrap());
+
+        let iter2 = "1x1x10".split('x').map(|n| n.parse::<u32>());
+        assert_eq!([1, 1, 10], iter_result_to_array(iter2).unwrap());
+    }
+
+    #[test]
     fn test_p1() {
-        assert_eq!(58, p1("2x3x4").unwrap());
-        assert_eq!(43, p1("1x1x10").unwrap());
+        assert_eq!(58, p1([2, 3, 4]));
+        assert_eq!(43, p1([1, 1, 10]));
+    }
+
+    #[test]
+    fn test_p2() {
+        assert_eq!(34, p2([2, 3, 4]));
+        assert_eq!(14, p2([1, 1, 10]));
     }
 }
