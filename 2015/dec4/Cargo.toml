@@ -5,3 +5,11 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1"
+
+[profile.release]
+opt-level = 3         # Options: 0-3, "s" (size), "z" (smaller size)
+lto = "fat"           # Link-Time Optimization: true, "thin", "fat", or "off"
+codegen-units = 1     # Reduce parallel codegen chunks for better optimizations (slower compile time)
+panic = "abort"       # Removes unwinding code, reducing binary size and sometimes improving speed
+strip = "debuginfo"   # Strip symbols/debuginfo: "none", "debuginfo", or "symbols"
+debug = false          # Include debug info (or "line-tables-only")
