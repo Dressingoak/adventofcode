@@ -15,14 +15,12 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn find(key: &str, zeros: usize) -> usize {
-    let start = "0".repeat(zeros);
+fn find<const ZEROS: u32>(key: &str) -> usize {
     let mut i = 0;
     loop {
         let test = format!("{}{}", key, i);
         let hash = md5(test.as_bytes());
-        let repr = format!("{:032x}", hash);
-        if &repr[..5] ==  &start {
+        if hash.leading_zeros() >= 4 * ZEROS {
             break i;
         }
         i += 1;
@@ -33,8 +31,8 @@ fn main() -> Result<()> {
     let filename = env::args().nth(1).expect("Filename should be set");
     if let Some(line) = read_lines(&filename)?.next() {
         let l = line?;
-        println!("Dec 4, part 1: {}", find(&l, 5));
-        println!("Dec 4, part 2: {}", find(&l, 6));
+        println!("Dec 4, part 1: {}", find::<5>(&l));
+        println!("Dec 4, part 2: {}", find::<6>(&l));
     } else {
         bail!("Could not read line")
     }
@@ -47,7 +45,7 @@ mod tests {
 
     #[test]
     fn test_p1() {
-        assert_eq!(609043, find("abcdef", 5));
-        assert_eq!(1048970, find("pqrstuv", 5));
+        assert_eq!(609043, find::<5>("abcdef"));
+        assert_eq!(1048970, find::<5>("pqrstuv"));
     }
 }

@@ -10,6 +10,7 @@ out/
 .vs/
 .python_venv/
 Cargo.lock
+flamegraph.svg
 
 # Compiled Java class files
 *.class
