@@ -147,6 +147,14 @@ impl Circut {
             }
         }
     }
+
+    fn set(&mut self, wire: &str, op: Operator) {
+        self.wires.insert(wire.to_string(), op);
+    }
+
+    fn reset(&mut self) {
+        self.resolved = HashMap::new();
+    }
 }
 
 fn main() -> Result<()> {
@@ -155,6 +163,10 @@ fn main() -> Result<()> {
     let mut circut = Circut::configure(instructions?.iter().map(|s| s.as_str()))?;
     let a = circut.emulate("a")?;
     println!("Dec 7, part 1: {a}");
+    circut.set("b", Operator::Assignment(Operand::Value(a)));
+    circut.reset();
+    let a = circut.emulate("a")?;
+    println!("Dec 7, part 2: {a}");
     Ok(())
 }
 
