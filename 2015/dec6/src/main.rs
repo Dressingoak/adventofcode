@@ -52,6 +52,7 @@ enum Action {
 fn main() -> Result<()> {
     let filename = env::args().nth(1).expect("Filename should be set");
     let mut grid = [[false; 1000]; 1000];
+    let mut grid_brightness = vec![vec![0u32; 1000]; 1000];
     for line in read_lines(&filename)? {
         let string = line?;
         let split: Vec<&str> = string.split_ascii_whitespace().collect();
@@ -66,10 +67,22 @@ fn main() -> Result<()> {
         for x in x1..=x2 {
             for y in y1..=y2 {
                 let entry = &mut grid[y][x];
+                let entry_brightness = &mut grid_brightness[y][x];
                 match action {
-                    Action::TurnOn => *entry = true,
-                    Action::Toggle => *entry = !*entry,
-                    Action::TurnOff => *entry = false,
+                    Action::TurnOn => {
+                        *entry = true;
+                        *entry_brightness += 1;
+                    }
+                    Action::Toggle => {
+                        *entry = !*entry;
+                        *entry_brightness += 2;
+                    }
+                    Action::TurnOff => {
+                        *entry = false;
+                        if *entry_brightness > 0 {
+                            *entry_brightness -= 1
+                        };
+                    }
                 }
             }
         }
@@ -78,7 +91,12 @@ fn main() -> Result<()> {
         .iter()
         .map(|row| row.iter().map(|&x| if x { 1 } else { 0 }).sum::<u32>())
         .sum();
+    let total_brightness: u32 = grid_brightness
+        .iter()
+        .map(|row| row.iter().sum::<u32>())
+        .sum();
 
     println!("Dec 6, part 1: {}", lit);
+    println!("Dec 6, part 2: {}", total_brightness);
     Ok(())
 }
