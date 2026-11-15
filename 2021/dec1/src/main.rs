@@ -1,6 +1,5 @@
 fn transform_data(data: String) -> Vec<u32> {
-    data
-        .split_whitespace()
+    data.split_whitespace()
         .map(|x| x.parse::<u32>().unwrap())
         .collect()
 }

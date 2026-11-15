@@ -89,13 +89,10 @@ impl Circut {
         } else {
             if let Some(operator) = self.wires.get(wire).cloned() {
                 let value = match operator {
-                    Operator::Assignment(value) => {
-                        let value = match value {
-                            Operand::Value(v) => v,
-                            Operand::Variable(w) => self.emulate(&w)?,
-                        };
-                        value
-                    }
+                    Operator::Assignment(value) => match value {
+                        Operand::Value(v) => v,
+                        Operand::Variable(w) => self.emulate(&w)?,
+                    },
                     Operator::And(w1, w2) => {
                         let v1 = match w1 {
                             Operand::Value(v) => v,
