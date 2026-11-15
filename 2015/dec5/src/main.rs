@@ -72,7 +72,7 @@ fn is_nice_string_p2(string: &str) -> bool {
         }
 
         // Rule 2
-        if chars[i] == chars[i+2] {
+        if chars[i] == chars[i + 2] {
             repeats2 = true;
         }
     }
