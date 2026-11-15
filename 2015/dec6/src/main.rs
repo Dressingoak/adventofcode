@@ -33,7 +33,7 @@ where
         });
         if let (Some(Ok(x)), Some(Ok(y))) = (iter.next(), iter.next()) {
             if iter.next().is_none() {
-                return Ok(Point { x, y });
+                Ok(Point { x, y })
             } else {
                 bail!("Expected exactly 2 values")
             }

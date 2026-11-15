@@ -13,39 +13,31 @@ where
 }
 
 const fn is_vowel(c: char) -> bool {
-    match c {
-        'a' | 'e' | 'i' | 'o' | 'u' => true,
-        _ => false,
-    }
+    matches!(c, 'a' | 'e' | 'i' | 'o' | 'u')
 }
 
 const fn is_bad_pair(first: char, second: char) -> bool {
-    match (first, second) {
-        ('a', 'b') | ('c', 'd') | ('p', 'q') | ('x', 'y') => true,
-        _ => false,
-    }
+    matches!(
+        (first, second),
+        ('a', 'b') | ('c', 'd') | ('p', 'q') | ('x', 'y')
+    )
 }
 
 fn is_nice_string(string: &str) -> bool {
     let mut vowels = 0;
     let mut repeats = false;
 
-    let mut chars = string.chars();
     let mut chars_next = string.chars().skip(1);
-    loop {
-        if let Some(c) = chars.next() {
-            if is_vowel(c) {
-                vowels += 1;
+    for c in string.chars() {
+        if is_vowel(c) {
+            vowels += 1;
+        }
+        if let Some(n) = chars_next.next() {
+            if n == c {
+                repeats = true;
             }
-            if let Some(n) = chars_next.next() {
-                if n == c {
-                    repeats = true;
-                }
-                if is_bad_pair(c, n) {
-                    return false;
-                }
-            } else {
-                break;
+            if is_bad_pair(c, n) {
+                return false;
             }
         } else {
             break;
