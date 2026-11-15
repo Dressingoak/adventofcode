@@ -1,11 +1,10 @@
-use anyhow::{Context, Result, bail};
-use std::collections::{HashMap, HashSet};
-use std::collections::hash_map::Entry;
+use anyhow::{Result, bail};
+use std::collections::HashMap;
 use std::env;
+use std::fmt::Display;
 use std::fs::File;
 use std::hash::Hash;
 use std::io::{self, BufRead};
-use std::iter::once;
 use std::path::Path;
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -25,20 +24,19 @@ struct Node<T> {
 #[derive(Default)]
 struct UndirectedGraph<T> {
     nodes: Vec<T>,
-    edges: HashMap<(usize, usize), u32>
+    edges: HashMap<(usize, usize), u32>,
 }
 
 impl<T> UndirectedGraph<T>
-where T: Eq + Hash,
-(T, T): Eq + Hash {
+where
+    T: Eq + Hash,
+{
     fn add(&mut self, node: Node<T>) -> Result<()> {
         let Node { from, to, weight } = node;
         let from_index = self.nodes.iter().position(|x| x == &from);
         let to_index = self.nodes.iter().position(|x| x == &to);
         let (i, j) = match (from_index, to_index) {
-            (Some(i), Some(j)) => {
-                (i, j)
-            }
+            (Some(i), Some(j)) => (i, j),
             (Some(i), None) => {
                 self.nodes.push(to);
                 let j = self.nodes.len() - 1;
@@ -62,71 +60,85 @@ where T: Eq + Hash,
         Ok(())
     }
 
-    // fn travelling_salesman(&self) -> u32 {
-
-    // }
-
-    fn _node_permutations<'a>(&'a self, used: Vec<usize>, current: Vec<&str>) -> impl Iterator<Item = Vec<&'a T>> {
-        todo!()
+    fn get(&self, a: &T, b: &T) -> Option<u32> {
+        let from_index = self.nodes.iter().position(|x| x == a)?;
+        let to_index = self.nodes.iter().position(|x| x == b)?;
+        self.edges.get(&(from_index, to_index)).cloned()
     }
-}
 
-struct Permutations<'a, T> {
-    k: usize,
-    arr: Vec<&'a T>,
-}
-
-struct InnerPermutations<'a, T> {
-    inner: Vec<>
-}
-
-impl<'a, T> Iterator for Permutations<'a, T> {
-    type Item = Vec<&'a T>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.k {
-            0 => None,
-            1 => {
-                self.k = 0;
-                Some(self.arr)
-            },
-            k => {
-                let mut iters = Vec::with_capacity(k+1);
-                iters.push(Permutations {
-                    k: k -1,
-                    arr: self.arr.clone(),
-                });
-                for i in 0..(k-1) {
-                    let arr = self.arr.clone();
-                    if k % 2 == 0 {
-                        arr.swap(i, k-1);
-                    } else {
-                        arr.swap(0, k-1);
+    fn travelling_salesman(&self) -> u32
+    where
+        T: Display,
+    {
+        let refs: Vec<&T> = self.nodes.iter().collect();
+        let n = refs.len();
+        permutations(refs)
+            .chunks(n)
+            .map(|nodes| {
+                let mut cost = 0;
+                for wd in nodes.windows(2) {
+                    match wd {
+                        &[a, b] => {
+                            if let Some(w) = self.get(a, b) {
+                                cost += w;
+                            } else {
+                                panic!("Could not find weight");
+                            }
+                        }
+                        _ => unreachable!(),
                     }
-                    iters.push(Permutations { k: k - 1, arr });
                 }
-                iters.iter().flat_map(|iter| iter)
-            }
-        }
+                (nodes, cost)
+            })
+            .fold(None, |acc, (nodes, cost)| {
+                for (i, &node) in nodes.iter().enumerate() {
+                    if i > 0 {
+                        print!(" -> ");
+                    }
+                    print!("{node}");
+                }
+                println!(" = {cost}");
+                match acc {
+                    None => Some(cost),
+                    Some(prev) => Some(prev.min(cost)),
+                }
+            })
+            .unwrap()
     }
 }
 
-fn permutations<'a, T>(k: usize, mut arr: Vec<&'a T>) -> impl Iterator<Item = Vec<&'a T>> {
-    if k == 1 {
-        once(arr)
-    } else {
-        let mut iters: Vec<impl > = Vec::with_capacity(k+1);
-        iters.push(permutations(k - 1, arr));
-        for i in 0..(k-1) {
-            if k % 2 == 0 {
-                arr.swap(i, k-1);
-            } else {
-                arr.swap(0, k-1);
-            }
-            iters.push(permutations(k - 1, arr));
-        }
-        iters.iter().flat_map(|iter| iter)
+fn fact(n: usize) -> usize {
+    match n {
+        0 => 1,
+        1 => 1,
+        n => n * fact(n - 1),
     }
+}
+
+fn permutations<'a, T>(mut arr: Vec<&'a T>) -> Vec<&'a T> {
+    let n = arr.len();
+    let mut res = Vec::with_capacity(fact(n) * arr.len());
+    let mut c = vec![0; n];
+    res.extend(arr.iter());
+
+    let mut i = 1;
+    while i < n {
+        if c[i] < i {
+            if i % 2 == 0 {
+                arr.swap(0, i);
+            } else {
+                arr.swap(c[i], i);
+            }
+            res.extend(arr.iter());
+            c[i] += 1;
+            i = 1;
+        } else {
+            c[i] = 0;
+            i += 1;
+        }
+    }
+
+    res
 }
 
 fn parse(line: &str) -> Result<Node<String>> {
@@ -134,9 +146,13 @@ fn parse(line: &str) -> Result<Node<String>> {
     match split[..] {
         [a, "to", b, "=", distance] => {
             let weight = distance.parse()?;
-            Ok(Node { from: a.to_string(), to: b.to_string(), weight })
-        },
-        _ => bail!("Unexpected pattern: '{line}'")
+            Ok(Node {
+                from: a.to_string(),
+                to: b.to_string(),
+                weight,
+            })
+        }
+        _ => bail!("Unexpected pattern: '{line}'"),
     }
 }
 
@@ -148,29 +164,38 @@ fn main() -> Result<()> {
         let node = parse(&line)?;
         graph.add(node)?;
     }
-    let a = circut.emulate("a")?;
-    println!("Dec 7, part 1: {a}");
+    let res = graph.travelling_salesman();
+    println!("Dec 9, part 1: {res}");
     Ok(())
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
 
-//     #[test]
-//     fn test_p1() {
-//         let instructions = "London to Dublin = 464
-// London to Belfast = 518
-// Dublin to Belfast = 141";
-//         let mut circut = Circut::configure(instructions.split("\n")).unwrap();
+    use super::*;
 
-//         assert_eq!(72, circut.emulate("d").unwrap());
-//         assert_eq!(507, circut.emulate("e").unwrap());
-//         assert_eq!(492, circut.emulate("f").unwrap());
-//         assert_eq!(114, circut.emulate("g").unwrap());
-//         assert_eq!(65412, circut.emulate("h").unwrap());
-//         assert_eq!(65079, circut.emulate("i").unwrap());
-//         assert_eq!(123, circut.emulate("x").unwrap());
-//         assert_eq!(456, circut.emulate("y").unwrap());
-//     }
-// }
+    #[test]
+    fn test_permutations() {
+        const N: usize = 3;
+        let vals = Vec::from_fn(N, |i| char::from_u32((i + 65) as u32).unwrap());
+        let arr = permutations(vals.iter().collect());
+        let mut set = HashSet::new();
+        for chunk in arr.chunks(N) {
+            let arr: [char; N] = chunk
+                .iter()
+                .map(|&x| *x)
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap();
+            set.insert(arr);
+            println!("{chunk:?}");
+        }
+        assert!(set.contains(&['A', 'B', 'C']));
+        assert!(set.contains(&['B', 'A', 'C']));
+        assert!(set.contains(&['A', 'C', 'B']));
+        assert!(set.contains(&['C', 'A', 'B']));
+        assert!(set.contains(&['B', 'C', 'A']));
+        assert!(set.contains(&['C', 'B', 'A']));
+    }
+}
