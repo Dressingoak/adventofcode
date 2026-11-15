@@ -53,14 +53,32 @@ fn count_excess_chars(string: &str) -> usize {
     string.len() - count_in_memory(string)
 }
 
+fn count_encoded(string: &str) -> usize {
+    let mut size = 2;
+    for c in string.chars() {
+        match c {
+            '\\' | '"' => size += 2,
+            _ => size += 1,
+        }
+    }
+    size
+}
+
+fn count_excess_encoded(string: &str) -> usize {
+    count_encoded(string) - string.len()
+}
+
 fn main() -> Result<()> {
     let filename = env::args().nth(1).expect("Filename should be set");
     let mut n = 0;
+    let mut m = 0;
     for line in read_lines(&filename)? {
         let l = line?;
         n += count_excess_chars(&l);
+        m += count_excess_encoded(&l);
     }
     println!("Dec 8, part 1: {n}");
+    println!("Dec 8, part 2: {m}");
     Ok(())
 }
 
@@ -78,6 +96,19 @@ mod tests {
         ] {
             assert_eq!(size, s.len());
             assert_eq!(in_memory, count_in_memory(s));
+        }
+    }
+
+    #[test]
+    fn test_p2() {
+        for (s, size, encoded) in [
+            ("\"\"", 2, 6),
+            ("\"abc\"", 5, 9),
+            ("\"aaa\\\"aaa\"", 10, 16),
+            ("\"\\x27\"", 6, 11),
+        ] {
+            assert_eq!(size, s.len());
+            assert_eq!(encoded, count_encoded(s));
         }
     }
 }
