@@ -66,7 +66,7 @@ where
         self.edges.get(&(from_index, to_index)).cloned()
     }
 
-    fn travelling_salesman(&self) -> u32
+    fn travelling_salesman(&self) -> (u32, u32)
     where
         T: Display,
     {
@@ -91,8 +91,8 @@ where
                 cost
             })
             .fold(None, |acc, cost| match acc {
-                None => Some(cost),
-                Some(prev) => Some(prev.min(cost)),
+                None => Some((cost, cost)),
+                Some((prev_min, prev_max)) => Some((prev_min.min(cost), prev_max.max(cost))),
             })
             .unwrap()
     }
@@ -155,8 +155,9 @@ fn main() -> Result<()> {
         let node = parse(&line)?;
         graph.add(node)?;
     }
-    let res = graph.travelling_salesman();
-    println!("Dec 9, part 1: {res}");
+    let (res_min, res_max) = graph.travelling_salesman();
+    println!("Dec 9, part 1: {res_min}");
+    println!("Dec 9, part 2: {res_max}");
     Ok(())
 }
 
