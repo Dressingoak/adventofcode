@@ -88,20 +88,11 @@ where
                         _ => unreachable!(),
                     }
                 }
-                (nodes, cost)
+                cost
             })
-            .fold(None, |acc, (nodes, cost)| {
-                for (i, &node) in nodes.iter().enumerate() {
-                    if i > 0 {
-                        print!(" -> ");
-                    }
-                    print!("{node}");
-                }
-                println!(" = {cost}");
-                match acc {
-                    None => Some(cost),
-                    Some(prev) => Some(prev.min(cost)),
-                }
+            .fold(None, |acc, cost| match acc {
+                None => Some(cost),
+                Some(prev) => Some(prev.min(cost)),
             })
             .unwrap()
     }
@@ -115,7 +106,7 @@ fn fact(n: usize) -> usize {
     }
 }
 
-fn permutations<'a, T>(mut arr: Vec<&'a T>) -> Vec<&'a T> {
+fn permutations<T>(mut arr: Vec<&T>) -> Vec<&T> {
     let n = arr.len();
     let mut res = Vec::with_capacity(fact(n) * arr.len());
     let mut c = vec![0; n];
