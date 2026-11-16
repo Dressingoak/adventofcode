@@ -44,20 +44,16 @@ impl Password {
     }
 
     fn has_chain(&self) -> bool {
-        self.chars.windows(3).any(|x| match x[..] {
-            [a, b, c] if (a + 1 == b) && (b + 1 == c) => true,
-            _ => false,
-        })
+        self.chars
+            .windows(3)
+            .any(|x| matches!(x[..], [a, b, c] if (a + 1 == b) && (b + 1 == c)))
     }
 
     fn has_no_disallowed(&self) -> bool {
         // 8 == 'i' as char - 97
         // 14 == 'o'  as char - 97
         // 11 == 'l' as char - 97
-        self.chars.iter().all(|x| match x {
-            8 | 11 | 14 => false,
-            _ => true,
-        })
+        self.chars.iter().all(|x| !matches!(x, 8 | 11 | 14))
     }
 
     fn has_two_pairs(&self) -> bool {
@@ -92,10 +88,10 @@ impl TryFrom<&str> for Password {
             let mut chars = [0u8; 8];
             for (i, c) in value.chars().enumerate() {
                 let value = u8::try_from(c)?;
-                if value < 97 || value > 122 {
+                if !(97..=122).contains(&value) {
                     bail!("Non-lowercase letter '{c}'");
                 } else {
-                    chars[i] = (value as u8) - 97;
+                    chars[i] = value - 97;
                 }
             }
             Ok(Password { chars })
