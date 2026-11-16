@@ -114,6 +114,8 @@ fn main() -> Result<()> {
     let mut pw = Password::try_from(pw.as_str())?;
     pw.increment();
     println!("Dec 11, part 1: {pw}");
+    pw.increment();
+    println!("Dec 11, part 2: {pw}");
     Ok(())
 }
 
