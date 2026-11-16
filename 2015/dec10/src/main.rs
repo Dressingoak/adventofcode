@@ -57,7 +57,7 @@ fn main() -> Result<()> {
     for _ in 0..40 {
         seq = look_and_say(&seq);
     }
-    println!("Dec 9, part 1: {}", seq.len());
+    println!("Dec 10, part 1: {}", seq.len());
     Ok(())
 }
 
