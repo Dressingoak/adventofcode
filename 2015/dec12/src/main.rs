@@ -38,8 +38,8 @@ fn sum(json: &str) -> i32 {
 
 #[derive(Debug, Clone)]
 enum JsonValue {
-    Array(Vec<Box<JsonValue>>),
-    Map(Vec<(String, Box<JsonValue>)>),
+    Array(Vec<JsonValue>),
+    Map(Vec<(String, JsonValue)>),
     Text(String),
     Number(i32),
 }
@@ -143,15 +143,13 @@ impl JsonValue {
             items.push(JsonValue::Number(value_buffer));
         }
         match container {
-            JsonContainerType::Array => {
-                JsonValue::Array(items.into_iter().map(|x| Box::new(x)).collect())
-            }
+            JsonContainerType::Array => JsonValue::Array(items),
             JsonContainerType::Map => JsonValue::Map(
                 items
                     .chunks(2)
-                    .map(|pair| match &pair[..] {
-                        [JsonValue::Text(key), value] => (key.clone(), Box::new(value.clone())),
-                        _ => panic!("Expected key/value pair, got {:?}", &pair),
+                    .map(|pair| match pair {
+                        [JsonValue::Text(key), value] => (key.clone(), value.clone()),
+                        _ => panic!("Expected key/value pair, got {:?}", pair),
                     })
                     .collect(),
             ),
@@ -170,7 +168,7 @@ impl JsonValue {
             JsonValue::Map(items) => {
                 let mut sum = 0;
                 for (_, value) in items {
-                    match value.as_ref() {
+                    match value {
                         JsonValue::Text(text) if text == "red" => return 0,
                         _ => {}
                     };
@@ -190,20 +188,20 @@ impl std::fmt::Display for JsonValue {
             JsonValue::Array(items) => {
                 write!(f, "[")?;
                 if let Some(item) = items.first() {
-                    write!(f, "{}", item.as_ref())?
+                    write!(f, "{}", item)?
                 }
                 for item in &items[1..] {
-                    write!(f, ",{}", item.as_ref())?
+                    write!(f, ",{}", item)?
                 }
                 write!(f, "]")
             }
             JsonValue::Map(pairs) => {
                 write!(f, "{{")?;
                 if let Some((key, value)) = pairs.first() {
-                    write!(f, "{key}:{}", value.as_ref())?
+                    write!(f, "{key}:{}", value)?
                 }
                 for (key, value) in &pairs[1..] {
-                    write!(f, ",{key}:{}", value.as_ref())?
+                    write!(f, ",{key}:{}", value)?
                 }
                 write!(f, "}}")
             }
