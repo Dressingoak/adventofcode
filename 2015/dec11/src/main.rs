@@ -1,29 +1,7 @@
-use anyhow::{Context, Result, bail};
+use utils::read_line;
+use anyhow::{Result, bail};
 use std::collections::HashSet;
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
 use std::{env, fmt};
-
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
-
-fn read_line<P>(filename: P) -> Result<String>
-where
-    P: AsRef<Path>,
-{
-    let path = filename.as_ref();
-    let line = read_lines(path)
-        .with_context(|| format!("failed to open {}", path.display()))?
-        .next()
-        .with_context(|| format!("{} is empty", path.display()))??;
-    Ok(line)
-}
 
 #[derive(Debug, PartialEq, Eq)]
 struct Password {
