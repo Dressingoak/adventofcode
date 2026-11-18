@@ -134,7 +134,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn parse<'a, I>(iter: I) -> Result<DirectedGraph<String>>
+fn parse<I>(iter: I) -> Result<DirectedGraph<String>>
 where
     I: IntoIterator,
     I::Item: AsRef<str>,

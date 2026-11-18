@@ -1,7 +1,7 @@
-use utils::read_line;
 use anyhow::{Result, bail};
 use std::collections::HashSet;
 use std::{env, fmt};
+use utils::read_line;
 
 #[derive(Debug, PartialEq, Eq)]
 struct Password {
