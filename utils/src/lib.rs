@@ -22,3 +22,14 @@ where
         .with_context(|| format!("{} is empty", path.display()))??;
     Ok(line)
 }
+
+pub fn read_lines_to_vec<P>(filename: P) -> Result<Vec<String>>
+where
+    P: AsRef<Path>,
+{
+    let path = filename.as_ref();
+    read_lines(path)
+        .with_context(|| format!("failed to open {}", path.display()))?
+        .collect::<io::Result<Vec<String>>>()
+        .with_context(|| format!("failed to read {}", path.display()))
+}
