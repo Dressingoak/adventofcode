@@ -3,7 +3,7 @@ use std::hash::Hash;
 use std::{collections::HashMap, env, fmt::Display, iter::once};
 use utils::read_lines_to_vec;
 
-struct Node<T> {
+struct Triplet<T> {
     from: T,
     to: T,
     weight: i32,
@@ -19,8 +19,8 @@ impl<T> DirectedGraph<T>
 where
     T: Eq + Hash,
 {
-    fn add(&mut self, node: Node<T>) -> Result<()> {
-        let Node { from, to, weight } = node;
+    fn add(&mut self, triplet: Triplet<T>) -> Result<()> {
+        let Triplet { from, to, weight } = triplet;
         let from_index = self.nodes.iter().position(|x| x == &from);
         let to_index = self.nodes.iter().position(|x| x == &to);
         let (i, j) = match (from_index, to_index) {
@@ -51,6 +51,10 @@ where
         let from_index = self.nodes.iter().position(|x| x == a)?;
         let to_index = self.nodes.iter().position(|x| x == b)?;
         self.edges.get(&(from_index, to_index)).cloned()
+    }
+
+    fn nodes(&self) -> &[T] {
+        self.nodes.as_slice()
     }
 
     fn travelling_salesman_wrap(&self) -> (i32, i32)
@@ -128,9 +132,24 @@ fn permutations<T>(mut arr: Vec<&T>) -> Vec<&T> {
 fn main() -> Result<()> {
     let filename = env::args().nth(1).expect("Filename should be set");
     let lines = read_lines_to_vec(&filename)?;
-    let graph = parse(lines.iter())?;
+    let mut graph = parse(lines.iter())?;
     let (_, max_happiness) = graph.travelling_salesman_wrap();
     println!("Dec 13, part 1: {max_happiness}");
+    let names = graph.nodes().to_vec();
+    for name in names {
+        graph.add(Triplet {
+            from: name.clone(),
+            to: "-".to_string(),
+            weight: 0,
+        })?;
+        graph.add(Triplet {
+            from: "-".to_string(),
+            to: name,
+            weight: 0,
+        })?;
+    }
+    let (_, max_happiness) = graph.travelling_salesman_wrap();
+    println!("Dec 13, part 2: {max_happiness}");
     Ok(())
 }
 
@@ -155,7 +174,7 @@ where
                 "next",
                 "to",
                 b,
-            ] => Node {
+            ] => Triplet {
                 from: a.to_string(),
                 to: b[..b.len() - 1].to_string(),
                 weight: x.parse()?,
@@ -172,7 +191,7 @@ where
                 "next",
                 "to",
                 b,
-            ] => Node {
+            ] => Triplet {
                 from: a.to_string(),
                 to: b[..b.len() - 1].to_string(),
                 weight: -x.parse()?,
